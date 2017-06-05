@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import org.soraworld.itemsaver.constant.IMod;
@@ -20,7 +21,8 @@ import java.util.List;
 
 import static net.minecraft.command.CommandBase.getPlayer;
 import static net.minecraft.command.CommandBase.notifyCommandListener;
-import static org.soraworld.itemsaver.ItemSaver.proxy;
+import static org.soraworld.itemsaver.ItemSaver.api;
+import static org.soraworld.itemsaver.constant.IMod.PREFIX;
 
 public class CommandSaver implements ICommand {
     @Override
@@ -44,10 +46,9 @@ public class CommandSaver implements ICommand {
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length == 1) {
             if (args[0].equals("list")) {
-                sender.sendMessage(new TextComponentString("list:all"));
-                for (String type : proxy.worldData.get().keySet()) {
+                for (String type : api.get().keySet()) {
                     sender.sendMessage(new TextComponentTranslation("isv.list.type", type));
-                    HashMap<String, ItemStack> map = proxy.worldData.get(type);
+                    HashMap<String, ItemStack> map = api.get(type);
                     for (String name : map.keySet()) {
                         sender.sendMessage(new TextComponentTranslation("isv.list.item", name, map.get(name).getDisplayName()));
                     }
@@ -55,49 +56,48 @@ public class CommandSaver implements ICommand {
                 return;
             }
             if (args[0].equals("save")) {
-                proxy.save();
+                api.save();
                 return;
             }
             if (args[0].equals("reload")) {
-                proxy.reload();
+                api.reload();
                 return;
             }
         }
         if (args.length == 2) {
             if (args[0].equals("list")) {
-                sender.sendMessage(new TextComponentString("list:" + args[1]));
-                HashMap<String, ItemStack> map = proxy.worldData.get(args[1]);
+                HashMap<String, ItemStack> map = api.get(args[1]);
                 for (String name : map.keySet()) {
                     sender.sendMessage(new TextComponentTranslation("isv.list.item", name, map.get(name).getDisplayName()));
                 }
                 return;
             }
             if (args[0].equals("remove")) {
-                proxy.worldData.remove(args[1]);
+                api.remove(args[1]);
                 sender.sendMessage(new TextComponentTranslation("isv.type.remove" + args[1]));
                 return;
             }
         }
         if (args.length == 3) {
             if (args[0].equals("add") && sender instanceof EntityPlayerMP) {
-                sender.sendMessage(new TextComponentString("add:" + args[1] + ":" + args[2]));
                 ItemStack it = ((EntityPlayerMP) sender).getHeldItemMainhand();
                 if (it.getItem() != Items.AIR) {
-                    proxy.worldData.add(args[1], args[2], it);
+                    api.add(args[1], args[2], it);
                     sender.sendMessage(new TextComponentTranslation("isv.name.add", args[1], args[2], it.getDisplayName()));
                     return;
                 }
             }
             if (args[0].equals("remove")) {
-                sender.sendMessage(new TextComponentString("remove:" + args[1] + ":" + args[2]));
-                proxy.worldData.remove(args[1], args[2]);
-                sender.sendMessage(new TextComponentTranslation("isv.name.remove", args[1], args[2]));
+                api.remove(args[1], args[2]);
+                ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
+                ITextComponent name = new TextComponentString(args[2]).setStyle(IMod.RED);
+                sender.sendMessage(new TextComponentTranslation("isv.name.remove", PREFIX, type, name));
                 return;
             }
         }
-        if (args.length >= 4 && args[0].equals("give") && sender instanceof EntityPlayerMP) {
+        if (args.length >= 4 && args[0].equals("give")) {
             EntityPlayerMP target = getPlayer(server, sender, args[1]);
-            ItemStack stack = proxy.worldData.get(args[2], args[3]);
+            ItemStack stack = api.get(args[2], args[3]);
             if (stack == null || stack.getItem() == Items.AIR) {
                 throw new WrongUsageException("isv.give.null");
             }
@@ -142,14 +142,13 @@ public class CommandSaver implements ICommand {
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[]
-            args, @Nullable BlockPos targetPos) {
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         return new ArrayList<>();
     }
 
     @Override
     public boolean isUsernameIndex(String[] args, int index) {
-        return false;
+        return args[0].equals("give") && index == 1;
     }
 
     @Override

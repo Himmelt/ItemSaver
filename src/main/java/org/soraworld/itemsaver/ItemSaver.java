@@ -1,20 +1,14 @@
 package org.soraworld.itemsaver;
 
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import org.soraworld.itemsaver.api.ItemSaverAPI;
 import org.soraworld.itemsaver.command.CommandSaver;
 import org.soraworld.itemsaver.constant.IMod;
-import org.soraworld.itemsaver.proxy.CommonProxy;
 
 import java.io.File;
-import java.io.IOException;
 
 @Mod(
         modid = IMod.MODID,
@@ -23,34 +17,22 @@ import java.io.IOException;
         acceptedMinecraftVersions = IMod.ACMCVERSION
 )
 public class ItemSaver {
-    @SidedProxy(clientSide = IMod.CLIENT_PROXY_CLASS, serverSide = IMod.SERVER_PROXY_CLASS)
-    public static CommonProxy proxy;
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-    }
-
-    @Mod.EventHandler
-    public void Init(FMLInitializationEvent event) {
-    }
+    public static ItemSaverAPI api;
 
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandSaver());
-        World world = event.getServer().getEntityWorld();
-        if (world instanceof WorldServer) {
-            try {
-                File dataDir = new File(((WorldServer) world).getChunkSaveLocation(), "data");
-                proxy.dataFile = new File(dataDir, IMod.MODID + ".dat");
-                proxy.worldData.readFromNBT(CompressedStreamTools.read(proxy.dataFile));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        WorldServer world = (WorldServer) event.getServer().getEntityWorld();
+        File dataDir = new File(world.getChunkSaveLocation(), "data");
+        File dataFile = new File(dataDir, IMod.MODID + ".dat");
+        api = new ItemSaverAPI(dataFile);
+        api.reload();
     }
 
     @Mod.EventHandler
     public void serverStopping(FMLServerStoppingEvent event) {
-        proxy.save();
+        api.save();
+        api = null;
     }
 }
