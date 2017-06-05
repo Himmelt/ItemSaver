@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import org.soraworld.itemsaver.command.CommandSaver;
 import org.soraworld.itemsaver.constant.IMod;
 import org.soraworld.itemsaver.proxy.CommonProxy;
@@ -31,7 +32,6 @@ public class ItemSaver {
 
     @Mod.EventHandler
     public void Init(FMLInitializationEvent event) {
-        proxy.registEventHandler();
     }
 
     @Mod.EventHandler
@@ -47,5 +47,10 @@ public class ItemSaver {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Mod.EventHandler
+    public void serverStopping(FMLServerStoppingEvent event) {
+        proxy.save();
     }
 }

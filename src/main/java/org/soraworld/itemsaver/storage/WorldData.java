@@ -59,12 +59,10 @@ public class WorldData {
     public void readFromNBT(NBTTagCompound nbt) {
         dataMap.clear();
         for (String type : nbt.getKeySet()) {
-            System.out.println("read:" + type);
             NBTBase base = nbt.getTag(type);
             if (base instanceof NBTTagCompound) {
                 HashMap<String, ItemStack> typeMap = new HashMap<>();
                 for (String name : ((NBTTagCompound) base).getKeySet()) {
-                    System.out.println("read:" + name);
                     NBTBase item = ((NBTTagCompound) base).getTag(name);
                     if (item instanceof NBTTagCompound) {
                         typeMap.put(name, new ItemStack((NBTTagCompound) item));
@@ -86,6 +84,5 @@ public class WorldData {
         }
         return compound;
     }
-
 
 }

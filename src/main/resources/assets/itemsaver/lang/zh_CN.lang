@@ -1,0 +1,7 @@
+isv.help.usage=§b[物品存储] §rhelping
+isv.list.type=§b[物品存储] §e%s§r 类的物品存储:
+isv.list.item=§b[物品存储]   §e%s§r (§a%s§r)
+isv.type.remove=§b[物品存储] §r已移除 §e%s§r 类的物品存储.
+isv.name.add=§b[物品存储] §r已添加 §e%s§r 类 §c%s§r (§a%s§r)的物品存储.
+isv.name.remove=§b[物品存储] §r已移除 §e%s§r 类 §c%s§r 的物品存储.
+isv.give.null=§b[物品存储] §r所选物品不存在或者是空气.
