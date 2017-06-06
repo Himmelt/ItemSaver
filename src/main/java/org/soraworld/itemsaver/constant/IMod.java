@@ -13,6 +13,7 @@ public final class IMod {
     public static final Style YELLOW = new Style().setColor(TextFormatting.YELLOW);
     public static final Style AQUA = new Style().setColor(TextFormatting.AQUA);
     public static final Style RED = new Style().setColor(TextFormatting.RED);
+    public static final Style GREEN = new Style().setColor(TextFormatting.GREEN);
 
     public static final ITextComponent PREFIX = new TextComponentTranslation("isv.prefix").setStyle(AQUA);
 }

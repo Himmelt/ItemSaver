@@ -1,9 +1,15 @@
 package org.soraworld.itemsaver.api;
 
+import net.minecraft.command.CommandResultStats;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.SoundCategory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +29,7 @@ public class ItemSaverAPI {
         if (!dataMap.containsKey(type)) {
             dataMap.put(type, new HashMap<>());
         }
-        dataMap.get(type).put(name, itemStack);
+        dataMap.get(type).put(name, itemStack.copy());
     }
 
     public HashMap<String, HashMap<String, ItemStack>> get() {
@@ -74,6 +80,31 @@ public class ItemSaverAPI {
         }
     }
 
+    public void give(ICommandSender sender, EntityPlayer target, ItemStack itemStack, int count) {
+        ItemStack it = itemStack.copy();
+        it.setCount(count);
+        boolean flag = target.inventory.addItemStackToInventory(it);
+        if (flag) {
+            target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            target.inventoryContainer.detectAndSendChanges();
+        }
+        if (flag && it.isEmpty()) {
+            it.setCount(1);
+            sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count);
+            EntityItem dropItem = target.dropItem(it, false);
+            if (dropItem != null) {
+                dropItem.makeFakeItem();
+            }
+        } else {
+            sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count - it.getCount());
+            EntityItem dropItem = target.dropItem(it, false);
+            if (dropItem != null) {
+                dropItem.setNoPickupDelay();
+                dropItem.setOwner(target.getName());
+            }
+        }
+    }
+
     private void readFromNBT(NBTTagCompound nbt) {
         dataMap.clear();
         for (String type : nbt.getKeySet()) {
@@ -102,6 +133,5 @@ public class ItemSaverAPI {
         }
         return compound;
     }
-
 
 }

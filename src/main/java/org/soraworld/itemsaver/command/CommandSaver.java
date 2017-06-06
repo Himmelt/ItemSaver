@@ -1,13 +1,12 @@
 package org.soraworld.itemsaver.command;
 
-import net.minecraft.command.*;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -22,7 +21,6 @@ import java.util.List;
 import static net.minecraft.command.CommandBase.getPlayer;
 import static net.minecraft.command.CommandBase.notifyCommandListener;
 import static org.soraworld.itemsaver.ItemSaver.api;
-import static org.soraworld.itemsaver.constant.IMod.PREFIX;
 
 public class CommandSaver implements ICommand {
     @Override
@@ -45,95 +43,82 @@ public class CommandSaver implements ICommand {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length == 1) {
-            if (args[0].equals("list")) {
-                for (String type : api.get().keySet()) {
-                    sender.sendMessage(new TextComponentTranslation("isv.list.type", type));
-                    HashMap<String, ItemStack> map = api.get(type);
-                    for (String name : map.keySet()) {
-                        sender.sendMessage(new TextComponentTranslation("isv.list.item", name, map.get(name).getDisplayName()));
+            switch (args[0]) {
+                case "list":
+                    for (String type : api.get().keySet()) {
+                        ITextComponent _type = new TextComponentString(type).setStyle(IMod.YELLOW);
+                        sender.sendMessage(new TextComponentTranslation("isv.list.type", IMod.PREFIX, _type));
+                        HashMap<String, ItemStack> map = api.get(type);
+                        for (String name : map.keySet()) {
+                            ITextComponent _name = new TextComponentString(name).setStyle(IMod.RED);
+                            sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getTextComponent()));
+                        }
                     }
-                }
-                return;
+                    break;
+                case "save":
+                    api.save();
+                    break;
+                case "reload":
+                    api.reload();
+                    break;
             }
-            if (args[0].equals("save")) {
-                api.save();
-                return;
-            }
-            if (args[0].equals("reload")) {
-                api.reload();
-                return;
-            }
-        }
-        if (args.length == 2) {
+        } else if (args.length == 2) {
             if (args[0].equals("list")) {
                 HashMap<String, ItemStack> map = api.get(args[1]);
+                ITextComponent _type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
+                sender.sendMessage(new TextComponentTranslation("isv.list.type", IMod.PREFIX, _type));
                 for (String name : map.keySet()) {
-                    sender.sendMessage(new TextComponentTranslation("isv.list.item", name, map.get(name).getDisplayName()));
+                    ITextComponent _name = new TextComponentString(name).setStyle(IMod.RED);
+                    sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getTextComponent()));
                 }
-                return;
-            }
-            if (args[0].equals("remove")) {
+            } else if (args[0].equals("remove")) {
                 api.remove(args[1]);
-                sender.sendMessage(new TextComponentTranslation("isv.type.remove" + args[1]));
-                return;
+                ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
+                sender.sendMessage(new TextComponentTranslation("isv.type.remove", IMod.PREFIX, type));
             }
-        }
-        if (args.length == 3) {
+        } else if (args.length == 3) {
             if (args[0].equals("add") && sender instanceof EntityPlayerMP) {
                 ItemStack it = ((EntityPlayerMP) sender).getHeldItemMainhand();
                 if (it.getItem() != Items.AIR) {
                     api.add(args[1], args[2], it);
-                    sender.sendMessage(new TextComponentTranslation("isv.name.add", args[1], args[2], it.getDisplayName()));
-                    return;
+                    ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
+                    ITextComponent name = new TextComponentString(args[2]).setStyle(IMod.RED);
+                    sender.sendMessage(new TextComponentTranslation("isv.name.add", IMod.PREFIX, type, name, it.getTextComponent()));
+                } else {
+                    sender.sendMessage(new TextComponentTranslation("isv.air.null", IMod.PREFIX).setStyle(IMod.RED));
                 }
-            }
-            if (args[0].equals("remove")) {
+            } else if (args[0].equals("remove")) {
                 api.remove(args[1], args[2]);
                 ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
                 ITextComponent name = new TextComponentString(args[2]).setStyle(IMod.RED);
-                sender.sendMessage(new TextComponentTranslation("isv.name.remove", PREFIX, type, name));
-                return;
+                sender.sendMessage(new TextComponentTranslation("isv.name.remove", IMod.PREFIX, type, name));
+            } else if (args[0].equals("give")) {
+                EntityPlayerMP target = getPlayer(server, sender, args[1]);
+                HashMap<String, ItemStack> map = api.get(args[2]);
+                for (String name : map.keySet()) {
+                    ItemStack stack = map.get(name);
+                    if (stack != null && stack.getItem() != Items.AIR) {
+                        api.give(sender, target, stack, stack.getCount());
+                    }
+                }
+                notifyCommandListener(sender, this, "commands.give.success", new TextComponentString(args[2]).setStyle(IMod.YELLOW), 1, target.getName());
             }
-        }
-        if (args.length >= 4 && args[0].equals("give")) {
+        } else if (args.length >= 4 && args[0].equals("give")) {
             EntityPlayerMP target = getPlayer(server, sender, args[1]);
             ItemStack stack = api.get(args[2], args[3]);
-            if (stack == null || stack.getItem() == Items.AIR) {
-                throw new WrongUsageException("isv.give.null");
-            }
-            int count = stack.getCount();
-            ItemStack itemStack = stack.copy();
-            if (args.length == 5 && args[4].matches("[0-9]{1,8}")) {
-                try {
+            if (stack != null && stack.getItem() != Items.AIR) {
+                int count = stack.getCount();
+                if (args.length == 5 && args[4].matches("[0-9]{1,8}")) {
                     count = Integer.valueOf(args[4]);
-                } finally {
-                    itemStack.setCount(count);
                 }
-            }
-            boolean flag = target.inventory.addItemStackToInventory(itemStack);
-            if (flag) {
-                target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                target.inventoryContainer.detectAndSendChanges();
-            }
-            if (flag && itemStack.isEmpty()) {
-                itemStack.setCount(1);
-                sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count);
-                EntityItem dropItem = target.dropItem(itemStack, false);
-                if (dropItem != null) {
-                    dropItem.makeFakeItem();
-                }
+                api.give(sender, target, stack, count);
+                notifyCommandListener(sender, this, "commands.give.success", stack.getTextComponent().setStyle(IMod.GREEN), count, target.getName());
             } else {
-                sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count);/////////////////////////
-                EntityItem dropItem = target.dropItem(itemStack, false);
-                if (dropItem != null) {
-                    dropItem.setNoPickupDelay();
-                    dropItem.setOwner(target.getName());
-                }
+                sender.sendMessage(new TextComponentTranslation("isv.air.null", IMod.PREFIX).setStyle(IMod.RED));
             }
-            notifyCommandListener(sender, this, "commands.give.success", itemStack.getTextComponent(), count, target.getName());
-            return;
+        } else {
+            sender.sendMessage(new TextComponentString("show help:"));
         }
-        sender.sendMessage(new TextComponentString("show help:"));
     }
 
     @Override

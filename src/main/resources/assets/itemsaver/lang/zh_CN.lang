@@ -1,8 +1,8 @@
 isv.prefix=[物品存储]
-isv.help.usage= helping
-isv.list.type=%s 类的物品存储:
-isv.list.item=%s (%s)
-isv.type.remove=已移除 %s 类的物品存储.
-isv.name.add=已添加 %s 类 %s (%s)的物品存储.
-isv.name.remove=%s 已移除 %s 类 %s 的物品存储.
-isv.give.null=所选物品不存在或者是空气.
+isv.help.usage=%shelping
+isv.list.type=%s%s 类的物品存储:
+isv.list.item=%s    %s %s
+isv.type.remove=%s已移除 %s 类的物品存储.
+isv.name.add=%s已添加 %s 类 %s %s的物品存储.
+isv.name.remove=%s已移除 %s 类 %s 的物品存储.
+isv.air.null=%s所选物品不存在或者是空气.
