@@ -1,8 +1,20 @@
 isv.prefix=[物品存储]
-isv.help.usage=%shelping
+
+isv.help.usage=/itemsaver|isv add|list|give|save|reload|remove
+isv.help.add=添加(覆盖)物品存储 /isv add <类名> <物品名>
+isv.help.give=给予玩家一类或一个物品 /isv give <玩家名|选择器> <类名> [物品名] [叠加数量]
+isv.help.list=列出所有或某类物品存储 /isv list [类名]
+isv.help.save=保存物品存储数据到文件 /isv save
+isv.help.reload=从文件重载物品存储数据 /isv reload
+isv.help.remove=移除某类或某个物品的存储 /isv remove <类名> [物品名]
+isv.help.cmd=该指令只能由玩家在游戏内执行!
+isv.help.null=所选物品不存在或者是空气.
+
 isv.list.type=%s%s 类的物品存储:
 isv.list.item=%s    %s %s
 isv.type.remove=%s已移除 %s 类的物品存储.
 isv.name.add=%s已添加 %s 类 %s %s的物品存储.
 isv.name.remove=%s已移除 %s 类 %s 的物品存储.
-isv.air.null=%s所选物品不存在或者是空气.
+
+isv.save=%s已保存数据.
+isv.reload=%s已重载数据.
