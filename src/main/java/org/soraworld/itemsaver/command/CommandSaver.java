@@ -12,16 +12,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.event.ClickEvent;
 import org.soraworld.itemsaver.constant.IMod;
+import org.soraworld.itemsaver.item.IItemStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static net.minecraft.command.CommandBase.getPlayer;
-import static net.minecraft.command.CommandBase.notifyCommandListener;
+import static net.minecraft.command.CommandBase.*;
 import static org.soraworld.itemsaver.ItemSaver.api;
 
 public class CommandSaver implements ICommand {
@@ -54,12 +53,10 @@ public class CommandSaver implements ICommand {
                     for (String type : api.get().keySet()) {
                         ITextComponent _type = new TextComponentString(type).setStyle(IMod.YELLOW);
                         sender.sendMessage(new TextComponentTranslation("isv.list.type", IMod.PREFIX, _type));
-                        HashMap<String, ItemStack> map = api.get(type);
+                        HashMap<String, IItemStack> map = api.get(type);
                         for (String name : map.keySet()) {
                             ITextComponent _name = new TextComponentString(name).setStyle(IMod.RED);
-                            ITextComponent hint = map.get(name).getTextComponent();
-                            hint.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/isv give @p " + type + " " + name));
-                            sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, hint));
+                            sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getText()));
                         }
                     }
                     break;
@@ -83,14 +80,14 @@ public class CommandSaver implements ICommand {
                 case "give":
                     throw new WrongUsageException("isv.help.give");
                 case "list":
-                    HashMap<String, ItemStack> map = api.get(args[1]);
+                    HashMap<String, IItemStack> map = api.get(args[1]);
                     ITextComponent _type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
                     sender.sendMessage(new TextComponentTranslation("isv.list.type", IMod.PREFIX, _type));
                     for (String name : map.keySet()) {
                         ITextComponent _name = new TextComponentString(name).setStyle(IMod.RED);
-                        ITextComponent hint = map.get(name).getTextComponent();
-                        hint.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/isv give @p " + args[1] + " " + name));
-                        sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, hint));
+                        //ITextComponent hint = map.get(name).getTextComponent();
+                        //hint.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/isv give @p " + args[1] + " " + name));
+                        sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getText()));
                     }
                     break;
                 case "save":
@@ -111,10 +108,10 @@ public class CommandSaver implements ICommand {
                     if (sender instanceof EntityPlayerMP) {
                         ItemStack it = ((EntityPlayerMP) sender).getHeldItemMainhand();
                         if (it.getItem() != Items.AIR) {
-                            api.add(args[1], args[2], it);
+                            IItemStack stack = api.add(args[1], args[2], it);
                             ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
                             ITextComponent name = new TextComponentString(args[2]).setStyle(IMod.RED);
-                            sender.sendMessage(new TextComponentTranslation("isv.name.add", IMod.PREFIX, type, name, it.getTextComponent()));
+                            sender.sendMessage(new TextComponentTranslation("isv.name.add", IMod.PREFIX, type, name, stack.getText()));
                         } else {
                             sender.sendMessage(new TextComponentTranslation("isv.help.null", IMod.PREFIX).setStyle(IMod.RED));
                         }
@@ -124,14 +121,14 @@ public class CommandSaver implements ICommand {
                     break;
                 case "give":
                     EntityPlayerMP target = getPlayer(server, sender, args[1]);
-                    HashMap<String, ItemStack> map = api.get(args[2]);
+                    HashMap<String, IItemStack> map = api.get(args[2]);
                     for (String name : map.keySet()) {
-                        ItemStack stack = map.get(name);
-                        if (stack != null && stack.getItem() != Items.AIR) {
-                            api.give(sender, target, stack, stack.getCount());
+                        IItemStack stack = map.get(name);
+                        if (stack != null && stack.get().getItem() != Items.AIR) {
+                            api.give(sender, target, stack, stack.get().getCount());
                         }
                     }
-                    notifyCommandListener(sender, this, "commands.give.success", new TextComponentString("[" + args[2] + "]").setStyle(IMod.YELLOW), 1, target.getName());
+                    notifyCommandListener(sender, this, "commands.give.success", new TextComponentString(" [" + args[2] + "] "), 1, target.getName());
                     break;
                 case "list":
                     throw new WrongUsageException("isv.help.list");
@@ -150,16 +147,14 @@ public class CommandSaver implements ICommand {
             }
         } else if (args.length >= 4 && args[0].equals("give")) {
             EntityPlayerMP target = getPlayer(server, sender, args[1]);
-            ItemStack stack = api.get(args[2], args[3]);
-            if (stack != null && stack.getItem() != Items.AIR) {
-                int count = stack.getCount();
+            IItemStack stack = api.get(args[2], args[3]);
+            if (stack != null && stack.get().getItem() != Items.AIR) {
+                int count = stack.get().getCount();
                 if (args.length == 5 && args[4].matches("[0-9]{1,8}")) {
                     count = Integer.valueOf(args[4]);
                 }
                 api.give(sender, target, stack, count);
-                ITextComponent hint = stack.getTextComponent();
-                hint.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/isv give @p " + args[2] + " " + args[3]));
-                notifyCommandListener(sender, this, "commands.give.success", hint, count, target.getName());
+                notifyCommandListener(sender, this, "commands.give.success", stack.getText(), count, target.getName());
             } else {
                 throw new WrongUsageException("isv.help.null");
             }
@@ -175,12 +170,15 @@ public class CommandSaver implements ICommand {
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+        if (args.length == 2 && args[1].equals("give")) {
+            return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        }
         return new ArrayList<>();
     }
 
     @Override
     public boolean isUsernameIndex(String[] args, int index) {
-        return args[0].equals("give") && index == 1;
+        return args.length >= 1 && args[0].equals("give") && index == 1;
     }
 
     @Override

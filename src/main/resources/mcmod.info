@@ -1,0 +1,16 @@
+[
+{
+  "modid": "itemsaver",
+  "name": "ItemSaver",
+  "description": "Save itemstacks to global nbt file.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Himmelt"],
+  "credits": "Himmelt making this mod.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

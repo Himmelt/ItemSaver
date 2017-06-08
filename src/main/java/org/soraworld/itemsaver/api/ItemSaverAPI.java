@@ -10,7 +10,10 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
+import org.soraworld.itemsaver.item.IItemStack;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,32 +21,35 @@ import java.util.HashMap;
 public class ItemSaverAPI {
 
     private final File dataFile;
-    private final HashMap<String, HashMap<String, ItemStack>> dataMap;
+    private final HashMap<String, HashMap<String, IItemStack>> dataMap;
 
     public ItemSaverAPI(File dataFile) {
         this.dataFile = dataFile;
         this.dataMap = new HashMap<>();
     }
 
-    public void add(String type, String name, ItemStack itemStack) {
+    public IItemStack add(@Nonnull String type, @Nonnull String name, @Nonnull ItemStack itemStack) {
         if (!dataMap.containsKey(type)) {
             dataMap.put(type, new HashMap<>());
         }
-        dataMap.get(type).put(name, itemStack.copy());
+        IItemStack stack = new IItemStack(type, name, itemStack);
+        dataMap.get(type).put(name, stack);
+        return stack;
     }
 
-    public HashMap<String, HashMap<String, ItemStack>> get() {
+    public HashMap<String, HashMap<String, IItemStack>> get() {
         return dataMap;
     }
 
-    public HashMap<String, ItemStack> get(String type) {
+    public HashMap<String, IItemStack> get(String type) {
         if (!dataMap.containsKey(type)) {
             dataMap.put(type, new HashMap<>());
         }
         return dataMap.get(type);
     }
 
-    public ItemStack get(String type, String name) {
+    @Nullable
+    public IItemStack get(String type, String name) {
         if (dataMap.containsKey(type)) {
             return dataMap.get(type).get(name);
         }
@@ -66,6 +72,10 @@ public class ItemSaverAPI {
 
     public void reload() {
         try {
+            if (!dataFile.exists() || !dataFile.isFile()) {
+                dataFile.delete();
+                dataFile.createNewFile();
+            }
             readFromNBT(CompressedStreamTools.read(dataFile));
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,8 +90,8 @@ public class ItemSaverAPI {
         }
     }
 
-    public void give(ICommandSender sender, EntityPlayer target, ItemStack itemStack, int count) {
-        ItemStack it = itemStack.copy();
+    public void give(ICommandSender sender, EntityPlayer target, IItemStack itemStack, int count) {
+        ItemStack it = itemStack.get().copy();
         it.setCount(count);
         boolean flag = target.inventory.addItemStackToInventory(it);
         if (flag) {
@@ -110,14 +120,12 @@ public class ItemSaverAPI {
         for (String type : nbt.getKeySet()) {
             NBTBase base = nbt.getTag(type);
             if (base instanceof NBTTagCompound) {
-                HashMap<String, ItemStack> typeMap = new HashMap<>();
                 for (String name : ((NBTTagCompound) base).getKeySet()) {
                     NBTBase item = ((NBTTagCompound) base).getTag(name);
                     if (item instanceof NBTTagCompound) {
-                        typeMap.put(name, new ItemStack((NBTTagCompound) item));
+                        add(type, name, new ItemStack((NBTTagCompound) item));
                     }
                 }
-                dataMap.put(type, typeMap);
             }
         }
     }
@@ -125,9 +133,9 @@ public class ItemSaverAPI {
     private NBTTagCompound writeToNBT(NBTTagCompound compound) {
         for (String type : dataMap.keySet()) {
             NBTTagCompound comp = new NBTTagCompound();
-            HashMap<String, ItemStack> typeMap = dataMap.get(type);
+            HashMap<String, IItemStack> typeMap = dataMap.get(type);
             for (String name : typeMap.keySet()) {
-                comp.setTag(name, typeMap.get(name).serializeNBT());
+                comp.setTag(name, typeMap.get(name).get().serializeNBT());
             }
             compound.setTag(type, comp);
         }
