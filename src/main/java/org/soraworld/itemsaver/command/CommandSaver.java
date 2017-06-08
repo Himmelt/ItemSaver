@@ -170,10 +170,18 @@ public class CommandSaver implements ICommand {
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
-        if (args.length == 2 && args[1].equals("give")) {
+        if (args.length == 2 && args[0].equals("give")) {
             return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
         }
+        if (args.length == 3 && args[0].equals("give")) {
+            return getListOfMatchingTypes();
+        }
         return new ArrayList<>();
+    }
+
+    private List<String> getListOfMatchingTypes() {
+        List<String> types = new ArrayList<>();
+        return types;
     }
 
     @Override
