@@ -4,6 +4,7 @@ import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -135,7 +136,10 @@ public class ItemSaverAPI {
             NBTTagCompound comp = new NBTTagCompound();
             HashMap<String, IItemStack> typeMap = dataMap.get(type);
             for (String name : typeMap.keySet()) {
-                comp.setTag(name, typeMap.get(name).get().serializeNBT());
+                ItemStack stack = typeMap.get(name).get();
+                if (stack.getItem() != Items.AIR) {
+                    comp.setTag(name, stack.serializeNBT());
+                }
             }
             compound.setTag(type, comp);
         }

@@ -64,6 +64,10 @@ public class CommandSaver implements ICommand {
                     api.save();
                     sender.sendMessage(new TextComponentTranslation("isv.save", IMod.PREFIX));
                     break;
+                case "clear":
+                    api.clear();
+                    sender.sendMessage(new TextComponentTranslation("isv.clear", IMod.PREFIX));
+                    break;
                 case "reload":
                     api.reload();
                     sender.sendMessage(new TextComponentTranslation("isv.reload", IMod.PREFIX));
@@ -174,14 +178,32 @@ public class CommandSaver implements ICommand {
             return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
         }
         if (args.length == 3 && args[0].equals("give")) {
-            return getListOfMatchingTypes();
+            return getListOfTypes(args[args.length - 1]);
+        }
+        if (args.length == 4 && args[0].equals("give")) {
+            return getListOfNames(args[2], args[args.length - 1]);
         }
         return new ArrayList<>();
     }
 
-    private List<String> getListOfMatchingTypes() {
+    private static List<String> getListOfTypes(String head) {
         List<String> types = new ArrayList<>();
+        for (String type : api.get().keySet()) {
+            if (type.startsWith(head)) {
+                types.add(type);
+            }
+        }
         return types;
+    }
+
+    private static List<String> getListOfNames(String type, String head) {
+        List<String> names = new ArrayList<>();
+        for (String name : api.get(type).keySet()) {
+            if (name.startsWith(head)) {
+                names.add(name);
+            }
+        }
+        return names;
     }
 
     @Override
