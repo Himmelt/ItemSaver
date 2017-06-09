@@ -14,7 +14,7 @@ isv.list.type=%sItems of %s :
 isv.list.item=%s    %s %s
 isv.type.remove=%sThe type of %s was removed.
 isv.name.add=%sThe item typed %s and named %s was added.
-isv.name.remove=%sThe item of %s type and named %s was removed.
+isv.name.remove=%sThe item typed %s and named %s was removed.
 
 isv.save=%sData saved.
 isv.clear=%sData cleared.
