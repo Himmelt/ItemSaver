@@ -1,5 +1,6 @@
 package org.soraworld.itemsaver;
 
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -22,12 +23,18 @@ public class ItemSaver {
 
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
-        event.registerServerCommand(new CommandSaver());
-        WorldServer world = (WorldServer) event.getServer().getEntityWorld();
-        File dataDir = new File(world.getChunkSaveLocation(), "data");
-        File dataFile = new File(dataDir, IMod.MODID + ".dat");
-        api = new ItemSaverAPI(dataFile);
-        api.reload();
+        World world = event.getServer().getEntityWorld();
+        if (world instanceof WorldServer) {
+            try {
+                event.registerServerCommand(new CommandSaver());
+                File dataDir = new File(((WorldServer) world).getChunkSaveLocation(), "data");
+                File dataFile = new File(dataDir, IMod.MODID + ".dat");
+                api = new ItemSaverAPI(dataFile);
+                api.reload();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Mod.EventHandler
