@@ -5,11 +5,11 @@
   "description": "Save itemstacks to global nbt file.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "https://github.com/SoraWorld/ItemSaver",
-  "updateUrl": "https://github.com/SoraWorld/ItemSaver",
+  "url": "https://coding.net/u/Himmelt/p/ItemSaver/git",
+  "updateUrl": "https://coding.net/u/Himmelt/p/ItemSaver/git",
   "authorList": ["Himmelt"],
   "credits": "Himmelt making this mod.",
-  "logoFile": "",
+  "logoFile": "assets/itemsaver/logo.png",
   "screenshots": [],
   "dependencies": []
 }
