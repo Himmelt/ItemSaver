@@ -31,7 +31,7 @@ public class ItemSaverAPI {
 
     public IItemStack add(@Nonnull String type, @Nonnull String name, @Nonnull ItemStack itemStack) {
         if (!dataMap.containsKey(type)) {
-            dataMap.put(type, new HashMap<>());
+            dataMap.put(type, new HashMap<String, IItemStack>());
         }
         IItemStack stack = new IItemStack(type, name, itemStack);
         dataMap.get(type).put(name, stack);
@@ -44,7 +44,7 @@ public class ItemSaverAPI {
 
     public HashMap<String, IItemStack> get(String type) {
         if (!dataMap.containsKey(type)) {
-            dataMap.put(type, new HashMap<>());
+            dataMap.put(type, new HashMap<String, IItemStack>());
         }
         return dataMap.get(type);
     }
@@ -77,9 +77,11 @@ public class ItemSaverAPI {
                 dataFile.delete();
                 dataFile.createNewFile();
             }
-            readFromNBT(CompressedStreamTools.read(dataFile));
+            NBTTagCompound compound = CompressedStreamTools.read(dataFile);
+            if (compound != null) readFromNBT(compound);
         } catch (IOException e) {
-            e.printStackTrace();
+            // TODO LOGGER
+            //e.printStackTrace();
         }
     }
 
