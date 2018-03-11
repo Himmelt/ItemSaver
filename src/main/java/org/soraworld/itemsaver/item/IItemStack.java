@@ -7,6 +7,7 @@ import net.minecraft.util.IChatComponent;
 import javax.annotation.Nonnull;
 
 public class IItemStack {
+
     private final ItemStack stack;
     private final IChatComponent text;
 

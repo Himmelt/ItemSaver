@@ -99,16 +99,18 @@ public class ItemSaverAPI {
         }
         if (flag && it.stackSize == 0) {
             it.stackSize = 1;
-            sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count);
+            //sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count);
             EntityItem dropItem = target.entityDropItem(it, 0);
             if (dropItem != null) {
-                dropItem.makeFakeItem();
+                dropItem.delayBeforeCanPickup = 32767;
+                dropItem.age = dropItem.getEntityItem().getItem().getEntityLifespan(dropItem.getEntityItem(), dropItem.worldObj) - 1;
             }
         } else {
-            sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count - it.stackSize);
+            //sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count - it.stackSize);
             EntityItem dropItem = target.entityDropItem(it, 0);
             if (dropItem != null) {
-                dropItem.setNoPickupDelay();
+                dropItem.delayBeforeCanPickup = 0;
+                //dropItem.setNoPickupDelay();
                 //dropItem.(target.getName());
             }
         }

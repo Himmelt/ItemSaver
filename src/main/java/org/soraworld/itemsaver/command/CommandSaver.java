@@ -1,9 +1,6 @@
 package org.soraworld.itemsaver.command;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.*;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -131,8 +128,7 @@ public class CommandSaver implements ICommand {
                             api.give(sender, target, stack, stack.get().stackSize);
                         }
                     }
-                    notifyCommandListener()
-                    notifyCommandListener(sender, this, "commands.give.success", new ChatComponentText(" [" + args[2] + "] "), 1, target.getName());
+                    CommandBase.func_152373_a(sender, this, "commands.give.success", new ChatComponentText(" [" + args[2] + "] "), 1, target.getCommandSenderName());
                     break;
                 case "list":
                     throw new WrongUsageException("isv.help.list");
@@ -158,7 +154,7 @@ public class CommandSaver implements ICommand {
                     count = Integer.valueOf(args[4]);
                 }
                 api.give(sender, target, stack, count);
-                notifyCommandListener(sender, this, "commands.give.success", stack.getText(), count, target.getCommandSenderName());
+                CommandBase.func_152373_a(sender, this, "commands.give.success", stack.getText(), count, target.getCommandSenderName());
             } else {
                 throw new WrongUsageException("isv.help.null");
             }
@@ -175,7 +171,7 @@ public class CommandSaver implements ICommand {
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 2 && args[0].equals("give")) {
-            return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getOnlinePlayerNames());
+            return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
         }
         if (args.length == 3 && args[0].equals("give")) {
             return getListOfTypes(args[args.length - 1]);
