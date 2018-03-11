@@ -5,44 +5,43 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.IChatComponent;
 import org.soraworld.itemsaver.constant.IMod;
 import org.soraworld.itemsaver.item.IItemStack;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static net.minecraft.command.CommandBase.*;
+import static net.minecraft.command.CommandBase.getListOfStringsMatchingLastWord;
+import static net.minecraft.command.CommandBase.getPlayer;
 import static org.soraworld.itemsaver.ItemSaver.api;
 
 public class CommandSaver implements ICommand {
+
     @Override
-    public String getName() {
+    public String getCommandName() {
         return IMod.MODID;
     }
 
     @Override
-    public String getUsage(ICommandSender sender) {
+    public String getCommandUsage(ICommandSender sender) {
         return "isv.help.usage";
     }
 
     @Override
-    public List<String> getAliases() {
+    public List<String> getCommandAliases() {
         List<String> alias = new ArrayList<>();
         alias.add("isv");
         return alias;
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
         if (args.length == 1) {
             switch (args[0]) {
                 case "add":
@@ -51,26 +50,26 @@ public class CommandSaver implements ICommand {
                     throw new WrongUsageException("isv.help.give");
                 case "list":
                     for (String type : api.get().keySet()) {
-                        ITextComponent _type = new TextComponentString(type).setStyle(IMod.YELLOW);
-                        sender.sendMessage(new TextComponentTranslation("isv.list.type", IMod.PREFIX, _type));
+                        IChatComponent _type = new ChatComponentText(type).setChatStyle(IMod.YELLOW);
+                        sender.addChatMessage(new ChatComponentTranslation("isv.list.type", IMod.PREFIX, _type));
                         HashMap<String, IItemStack> map = api.get(type);
                         for (String name : map.keySet()) {
-                            ITextComponent _name = new TextComponentString(name).setStyle(IMod.RED);
-                            sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getText()));
+                            IChatComponent _name = new ChatComponentText(name).setChatStyle(IMod.RED);
+                            sender.addChatMessage(new ChatComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getText()));
                         }
                     }
                     break;
                 case "save":
                     api.save();
-                    sender.sendMessage(new TextComponentTranslation("isv.save", IMod.PREFIX));
+                    sender.addChatMessage(new ChatComponentTranslation("isv.save", IMod.PREFIX));
                     break;
                 case "clear":
                     api.clear();
-                    sender.sendMessage(new TextComponentTranslation("isv.clear", IMod.PREFIX));
+                    sender.addChatMessage(new ChatComponentTranslation("isv.clear", IMod.PREFIX));
                     break;
                 case "reload":
                     api.reload();
-                    sender.sendMessage(new TextComponentTranslation("isv.reload", IMod.PREFIX));
+                    sender.addChatMessage(new ChatComponentTranslation("isv.reload", IMod.PREFIX));
                     break;
                 case "remove":
                     throw new WrongUsageException("isv.help.remove");
@@ -85,13 +84,13 @@ public class CommandSaver implements ICommand {
                     throw new WrongUsageException("isv.help.give");
                 case "list":
                     HashMap<String, IItemStack> map = api.get(args[1]);
-                    ITextComponent _type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
-                    sender.sendMessage(new TextComponentTranslation("isv.list.type", IMod.PREFIX, _type));
+                    IChatComponent _type = new ChatComponentText(args[1]).setChatStyle(IMod.YELLOW);
+                    sender.addChatMessage(new ChatComponentTranslation("isv.list.type", IMod.PREFIX, _type));
                     for (String name : map.keySet()) {
-                        ITextComponent _name = new TextComponentString(name).setStyle(IMod.RED);
-                        //ITextComponent hint = map.get(name).getTextComponent();
+                        IChatComponent _name = new ChatComponentText(name).setChatStyle(IMod.RED);
+                        //IChatComponent hint = map.get(name).getTextComponent();
                         //hint.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/isv give @p " + args[1] + " " + name));
-                        sender.sendMessage(new TextComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getText()));
+                        sender.addChatMessage(new ChatComponentTranslation("isv.list.item", IMod.PREFIX, _name, map.get(name).getText()));
                     }
                     break;
                 case "save":
@@ -100,8 +99,8 @@ public class CommandSaver implements ICommand {
                     throw new WrongUsageException("isv.help.reload");
                 case "remove":
                     api.remove(args[1]);
-                    ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
-                    sender.sendMessage(new TextComponentTranslation("isv.type.remove", IMod.PREFIX, type));
+                    IChatComponent type = new ChatComponentText(args[1]).setChatStyle(IMod.YELLOW);
+                    sender.addChatMessage(new ChatComponentTranslation("isv.type.remove", IMod.PREFIX, type));
                     break;
                 default:
                     throw new WrongUsageException("isv.help.usage");
@@ -110,29 +109,30 @@ public class CommandSaver implements ICommand {
             switch (args[0]) {
                 case "add":
                     if (sender instanceof EntityPlayerMP) {
-                        ItemStack it = ((EntityPlayerMP) sender).getHeldItemMainhand();
-                        if (it.getItem() != Items.AIR) {
+                        ItemStack it = ((EntityPlayerMP) sender).getHeldItem();
+                        if (it.getItem() != null) {
                             IItemStack stack = api.add(args[1], args[2], it);
-                            ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
-                            ITextComponent name = new TextComponentString(args[2]).setStyle(IMod.RED);
-                            sender.sendMessage(new TextComponentTranslation("isv.name.add", IMod.PREFIX, type, name, stack.getText()));
+                            IChatComponent type = new ChatComponentText(args[1]).setChatStyle(IMod.YELLOW);
+                            IChatComponent name = new ChatComponentText(args[2]).setChatStyle(IMod.RED);
+                            sender.addChatMessage(new ChatComponentTranslation("isv.name.add", IMod.PREFIX, type, name, stack.getText()));
                         } else {
-                            sender.sendMessage(new TextComponentTranslation("isv.help.null", IMod.PREFIX).setStyle(IMod.RED));
+                            sender.addChatMessage(new ChatComponentTranslation("isv.help.null", IMod.PREFIX).setChatStyle(IMod.RED));
                         }
                     } else {
                         throw new WrongUsageException("isv.help.cmd");
                     }
                     break;
                 case "give":
-                    EntityPlayerMP target = getPlayer(server, sender, args[1]);
+                    EntityPlayerMP target = getPlayer(sender, args[1]);
                     HashMap<String, IItemStack> map = api.get(args[2]);
                     for (String name : map.keySet()) {
                         IItemStack stack = map.get(name);
-                        if (stack != null && stack.get().getItem() != Items.AIR) {
-                            api.give(sender, target, stack, stack.get().getCount());
+                        if (stack != null && stack.get().getItem() != null) {
+                            api.give(sender, target, stack, stack.get().stackSize);
                         }
                     }
-                    notifyCommandListener(sender, this, "commands.give.success", new TextComponentString(" [" + args[2] + "] "), 1, target.getName());
+                    notifyCommandListener()
+                    notifyCommandListener(sender, this, "commands.give.success", new ChatComponentText(" [" + args[2] + "] "), 1, target.getName());
                     break;
                 case "list":
                     throw new WrongUsageException("isv.help.list");
@@ -142,23 +142,23 @@ public class CommandSaver implements ICommand {
                     throw new WrongUsageException("isv.help.reload");
                 case "remove":
                     api.remove(args[1], args[2]);
-                    ITextComponent type = new TextComponentString(args[1]).setStyle(IMod.YELLOW);
-                    ITextComponent name = new TextComponentString(args[2]).setStyle(IMod.RED);
-                    sender.sendMessage(new TextComponentTranslation("isv.name.remove", IMod.PREFIX, type, name));
+                    IChatComponent type = new ChatComponentText(args[1]).setChatStyle(IMod.YELLOW);
+                    IChatComponent name = new ChatComponentText(args[2]).setChatStyle(IMod.RED);
+                    sender.addChatMessage(new ChatComponentTranslation("isv.name.remove", IMod.PREFIX, type, name));
                     break;
                 default:
                     throw new WrongUsageException("isv.help.usage");
             }
         } else if (args.length >= 4 && args[0].equals("give")) {
-            EntityPlayerMP target = getPlayer(server, sender, args[1]);
+            EntityPlayerMP target = getPlayer(sender, args[1]);
             IItemStack stack = api.get(args[2], args[3]);
-            if (stack != null && stack.get().getItem() != Items.AIR) {
-                int count = stack.get().getCount();
+            if (stack != null && stack.get().getItem() != null) {
+                int count = stack.get().stackSize;
                 if (args.length == 5 && args[4].matches("[0-9]{1,8}")) {
                     count = Integer.valueOf(args[4]);
                 }
                 api.give(sender, target, stack, count);
-                notifyCommandListener(sender, this, "commands.give.success", stack.getText(), count, target.getName());
+                notifyCommandListener(sender, this, "commands.give.success", stack.getText(), count, target.getCommandSenderName());
             } else {
                 throw new WrongUsageException("isv.help.null");
             }
@@ -168,14 +168,14 @@ public class CommandSaver implements ICommand {
     }
 
     @Override
-    public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-        return sender.canUseCommand(2, this.getName());
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return sender.canCommandSenderUseCommand(2, this.getCommandName());
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 2 && args[0].equals("give")) {
-            return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+            return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getOnlinePlayerNames());
         }
         if (args.length == 3 && args[0].equals("give")) {
             return getListOfTypes(args[args.length - 1]);
@@ -212,7 +212,10 @@ public class CommandSaver implements ICommand {
     }
 
     @Override
-    public int compareTo(ICommand o) {
-        return getName().compareTo(o.getName());
+    public int compareTo(Object o) {
+        if (o instanceof CommandSaver) {
+            return getCommandName().compareTo(((CommandSaver) o).getCommandName());
+        }
+        return -1;
     }
 }

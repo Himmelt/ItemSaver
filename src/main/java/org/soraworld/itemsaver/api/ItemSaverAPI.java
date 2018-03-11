@@ -1,16 +1,12 @@
 package org.soraworld.itemsaver.api;
 
-import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.SoundCategory;
 import org.soraworld.itemsaver.item.IItemStack;
 
 import javax.annotation.Nonnull;
@@ -95,38 +91,42 @@ public class ItemSaverAPI {
 
     public void give(ICommandSender sender, EntityPlayer target, IItemStack itemStack, int count) {
         ItemStack it = itemStack.get().copy();
-        it.setCount(count);
+        it.stackSize = count;
         boolean flag = target.inventory.addItemStackToInventory(it);
         if (flag) {
-            target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            target.worldObj.playSound(target.posX, target.posY, target.posZ, "ENTITY_ITEM_PICKUP", 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F, false);
             target.inventoryContainer.detectAndSendChanges();
         }
-        if (flag && it.isEmpty()) {
-            it.setCount(1);
+        if (flag && it.stackSize == 0) {
+            it.stackSize = 1;
             sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count);
-            EntityItem dropItem = target.dropItem(it, false);
+            EntityItem dropItem = target.entityDropItem(it, 0);
             if (dropItem != null) {
                 dropItem.makeFakeItem();
             }
         } else {
-            sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count - it.getCount());
-            EntityItem dropItem = target.dropItem(it, false);
+            sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, count - it.stackSize);
+            EntityItem dropItem = target.entityDropItem(it, 0);
             if (dropItem != null) {
                 dropItem.setNoPickupDelay();
-                dropItem.setOwner(target.getName());
+                //dropItem.(target.getName());
             }
         }
     }
 
     private void readFromNBT(NBTTagCompound nbt) {
         dataMap.clear();
-        for (String type : nbt.getKeySet()) {
-            NBTBase base = nbt.getTag(type);
-            if (base instanceof NBTTagCompound) {
-                for (String name : ((NBTTagCompound) base).getKeySet()) {
-                    NBTBase item = ((NBTTagCompound) base).getTag(name);
-                    if (item instanceof NBTTagCompound) {
-                        add(type, name, new ItemStack((NBTTagCompound) item));
+        for (Object type : nbt.func_150296_c()) {
+            if (type instanceof String) {
+                NBTBase base = nbt.getTag((String) type);
+                if (base instanceof NBTTagCompound) {
+                    for (Object name : ((NBTTagCompound) base).func_150296_c()) {
+                        if (name instanceof String) {
+                            NBTBase item = ((NBTTagCompound) base).getTag((String) name);
+                            if (item instanceof NBTTagCompound) {
+                                add((String) type, (String) name, ItemStack.loadItemStackFromNBT((NBTTagCompound) item));
+                            }
+                        }
                     }
                 }
             }
@@ -139,8 +139,8 @@ public class ItemSaverAPI {
             HashMap<String, IItemStack> typeMap = dataMap.get(type);
             for (String name : typeMap.keySet()) {
                 ItemStack stack = typeMap.get(name).get();
-                if (stack.getItem() != Items.AIR) {
-                    comp.setTag(name, stack.serializeNBT());
+                if (stack.getItem() != null) {
+                    comp.setTag(name, stack.writeToNBT(new NBTTagCompound()));
                 }
             }
             compound.setTag(type, comp);
