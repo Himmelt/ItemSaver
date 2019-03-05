@@ -1,27 +1,24 @@
 package org.soraworld.itemsaver;
 
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 import org.soraworld.itemsaver.api.ItemSaverAPI;
 import org.soraworld.itemsaver.command.CommandSaver;
 import org.soraworld.itemsaver.constant.IMod;
+import org.soraworld.itemsaver.manager.ItemManager;
+import org.soraworld.violet.manager.SpigotManager;
+import org.soraworld.violet.plugin.SpigotPlugin;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.List;
 
-@Mod(
-        modid = IMod.MODID,
-        name = IMod.NAME,
-        version = IMod.VERSION,
-        acceptedMinecraftVersions = IMod.ACMCVERSION
-)
-public class ItemSaver {
+public class ItemSaver extends SpigotPlugin {
 
-    public static ItemSaverAPI api;
+    public static final String PLUGIN_ID = "itemsaver";
+    public static final String PLUGIN_NAME = "ItemSaver";
+    public static final String PLUGIN_VERSION = "1.1.4";
 
-    @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
         World world = event.getServer().getEntityWorld();
         if (world instanceof WorldServer) {
@@ -37,9 +34,15 @@ public class ItemSaver {
         }
     }
 
-    @Mod.EventHandler
-    public void serverStopping(FMLServerStoppingEvent event) {
-        api.save();
-        api = null;
+    protected SpigotManager registerManager(Path path) {
+        return new ItemManager(this, path);
+    }
+
+    public void afterEnable() {
+
+    }
+
+    protected List<Listener> registerListeners() {
+        return null;
     }
 }
