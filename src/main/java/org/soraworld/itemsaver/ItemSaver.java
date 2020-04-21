@@ -22,7 +22,7 @@ public final class ItemSaver {
             clientSide = "org.soraworld.itemsaver.client.ClientProxy",
             serverSide = "org.soraworld.itemsaver.common.CommonProxy"
     )
-    private static CommonProxy proxy;
+    public static CommonProxy proxy;
 
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
