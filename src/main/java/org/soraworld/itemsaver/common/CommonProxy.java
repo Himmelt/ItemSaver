@@ -34,14 +34,18 @@ public class CommonProxy {
 
     public void openMenu(EntityPlayerMP player) {
         ItemMenuData menuData = getMenuData(player);
-        int amount = (menuData.getAmount() + 8) / 9 * 9;
-        SaverInventory menu = new SaverInventory("物品春初管理器 - 类别", amount);
+        int amount = menuData.getAmount() / 9 * 9 + 9;
+        SaverInventory menu = new SaverInventory("物品存储管理器 - 类别", amount);
         player.displayGUIChest(menu);
     }
 
     private ItemMenuData getMenuData(EntityPlayerMP player) {
         if (menuData == null) {
-            menuData = (ItemMenuData) player.world.getMapStorage().getOrLoadData(ItemMenuData.class, "itemsaver:classes");
+            menuData = (ItemMenuData) player.world.loadData(ItemMenuData.class, "itemsaver_classes");
+        }
+        if (menuData == null) {
+            menuData = new ItemMenuData("itemsaver_classes");
+            player.world.setData("itemsaver_classes", menuData);
         }
         return menuData;
     }
