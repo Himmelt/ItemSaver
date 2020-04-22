@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.WorldSavedData;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -39,13 +39,11 @@ public class ItemMenuData extends WorldSavedData {
         }
     }
 
-    @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(@Nonnull NBTTagCompound compound) {
+    public void writeToNBT(@Nonnull NBTTagCompound compound) {
         NBTTagList list = new NBTTagList();
         types.forEach(type -> list.appendTag(new NBTTagString(type)));
         compound.setTag("types", list);
-        return compound;
     }
 
     public int getAmount() {
@@ -56,7 +54,7 @@ public class ItemMenuData extends WorldSavedData {
         menu.clear();
         List<String> list = new ArrayList<>(types);
         for (int i = 0; i < menu.getSizeInventory(); i++) {
-            ItemStack stack = new ItemStack(Blocks.STAINED_GLASS_PANE, 1, i % 16);
+            ItemStack stack = new ItemStack(Blocks.stained_glass_pane, 1, i % 16);
             if (i < list.size()) {
                 stack.setStackDisplayName("\u00A7r" + list.get(i));
                 menu.putKey(i, list.get(i));

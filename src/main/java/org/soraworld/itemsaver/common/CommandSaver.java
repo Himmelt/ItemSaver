@@ -6,11 +6,8 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.ChatComponentText;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,12 +17,12 @@ import java.util.List;
  */
 public class CommandSaver extends CommandBase {
     @Override
-    public String getName() {
+    public String getCommandName() {
         return "itemsaver";
     }
 
     @Override
-    public String getUsage(ICommandSender sender) {
+    public String getCommandUsage(ICommandSender sender) {
         return "isv give|add|set|remove|open";
     }
 
@@ -35,17 +32,18 @@ public class CommandSaver extends CommandBase {
     }
 
     @Override
-    public List<String> getAliases() {
+    public List<String> getCommandAliases() {
         return Arrays.asList("saver", "isv");
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        MinecraftServer server = MinecraftServer.getServer();
         if (args.length > 0) {
             switch (args[0]) {
                 case "give":
                     if (args.length >= 3) {
-                        EntityPlayerMP target = getPlayer(server, sender, args[1]);
+                        EntityPlayerMP target = getPlayer(sender, args[1]);
                         String type = args[2];
                         String name = null;
                         if (args.length >= 4) {
@@ -54,38 +52,38 @@ public class CommandSaver extends CommandBase {
                         ItemTypeData data = CommonProxy.getTypeData(server, type);
                         int amount = args.length >= 5 ? Integer.parseInt(args[4]) : -1;
                         data.give(target, name, amount);
-                        CommandBase.notifyCommandListener(sender, this, "commands.give.success", new TextComponentString(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getName());
+                        CommandBase.func_152373_a(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getCommandSenderName());
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv give <player> <type> [item] [amount]"));
+                        sender.addChatMessage(new ChatComponentText("/isv give <player> <type> [item] [amount]"));
                     }
                     break;
                 case "add":
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
-                            ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
+                            ItemStack stack = ((EntityPlayerMP) sender).getHeldItem();
                             if (CommonProxy.addItem(server, args[1], args[2], stack)) {
-                                sender.sendMessage(new TextComponentString("物品已添加!"));
+                                sender.addChatMessage(new ChatComponentText("物品已添加!"));
                             } else {
-                                sender.sendMessage(new TextComponentString("相应名称物品已存在，请更换名称或使用 set 覆盖 !"));
+                                sender.addChatMessage(new ChatComponentText("相应名称物品已存在，请更换名称或使用 set 覆盖 !"));
                             }
                         } else {
-                            sender.sendMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
+                            sender.addChatMessage(new ChatComponentText("此命令只能有游戏内玩家执行 !"));
                         }
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv add <type> <name>"));
+                        sender.addChatMessage(new ChatComponentText("/isv add <type> <name>"));
                     }
                     break;
                 case "set":
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
-                            ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
+                            ItemStack stack = ((EntityPlayerMP) sender).getHeldItem();
                             CommonProxy.setItem(server, args[1], args[2], stack);
-                            sender.sendMessage(new TextComponentString("物品已设置!"));
+                            sender.addChatMessage(new ChatComponentText("物品已设置!"));
                         } else {
-                            sender.sendMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
+                            sender.addChatMessage(new ChatComponentText("此命令只能有游戏内玩家执行 !"));
                         }
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv set <type> <name>"));
+                        sender.addChatMessage(new ChatComponentText("/isv set <type> <name>"));
                     }
                     break;
                 case "remove":
@@ -93,41 +91,42 @@ public class CommandSaver extends CommandBase {
                         String type = args[1];
                         if (args.length >= 3) {
                             CommonProxy.removeItem(server, type, args[2]);
-                            sender.sendMessage(new TextComponentString("已移除分类 - " + type + " 下的物品 - " + args[2]));
+                            sender.addChatMessage(new ChatComponentText("已移除分类 - " + type + " 下的物品 - " + args[2]));
                         } else {
                             CommonProxy.removeType(server, type);
-                            sender.sendMessage(new TextComponentString("已移除分类 - " + type));
+                            sender.addChatMessage(new ChatComponentText("已移除分类 - " + type));
                         }
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv remove <type> [name]"));
+                        sender.addChatMessage(new ChatComponentText("/isv remove <type> [name]"));
                     }
                     break;
                 case "open":
                     if (sender instanceof EntityPlayerMP) {
                         CommonProxy.openMenu((EntityPlayerMP) sender);
                     } else {
-                        sender.sendMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
+                        sender.addChatMessage(new ChatComponentText("此命令只能有游戏内玩家执行 !"));
                     }
                     break;
                 default:
-                    sender.sendMessage(new TextComponentString(getUsage(sender)));
+                    sender.addChatMessage(new ChatComponentText(getCommandUsage(sender)));
             }
         } else {
-            sender.sendMessage(new TextComponentString(getUsage(sender)));
+            sender.addChatMessage(new ChatComponentText(getCommandUsage(sender)));
         }
     }
 
     @Override
-    public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-        return sender.canUseCommand(2, "gamemode");
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return sender.canCommandSenderUseCommand(2, "gamemode");
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         if ("give".equals(args[0])) {
+            MinecraftServer server = MinecraftServer.getServer();
             switch (args.length) {
                 case 2:
-                    return CommandBase.getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+                    return CommandBase.getListOfStringsMatchingLastWord(args, server.getAllUsernames());
                 case 3:
                     return CommonProxy.getListOfTypes(server, args[args.length - 1]);
                 case 4:

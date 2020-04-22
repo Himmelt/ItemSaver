@@ -1,22 +1,21 @@
 package org.soraworld.itemsaver.common;
 
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.network.FMLEventChannel;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.INetHandlerPlayServer;
+import net.minecraft.network.play.server.S2DPacketOpenWindow;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.SoundCategory;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLEventChannel;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +36,10 @@ public class CommonProxy {
 
     @SubscribeEvent
     public void onMessage(FMLNetworkEvent.ServerCustomPacketEvent event) {
-        INetHandlerPlayServer handler = event.getHandler();
+        INetHandlerPlayServer handler = event.handler;
         if (handler instanceof NetHandlerPlayServer) {
-            EntityPlayerMP mp = ((NetHandlerPlayServer) handler).player;
-            if (mp.canUseCommand(2, "gamemode")) {
+            EntityPlayerMP mp = ((NetHandlerPlayServer) handler).playerEntity;
+            if (mp.canCommandSenderUseCommand(2, "gamemode")) {
                 openMenu(mp);
             }
         }
@@ -55,7 +54,7 @@ public class CommonProxy {
     }
 
     public static void openMenu(EntityPlayerMP player) {
-        ItemMenuData menuData = getMenuData(player.getServer());
+        ItemMenuData menuData = getMenuData(player.mcServer);
         int amount = menuData.getAmount() / 9 * 9 + 9;
         SaverInventory menu = new SaverInventory("物品存储管理器 - 类别", "", amount, true);
         menuData.fill(menu);
@@ -63,30 +62,41 @@ public class CommonProxy {
     }
 
     public static void openType(EntityPlayerMP player, String type) {
-        ItemTypeData saveData = getTypeData(player.getServer(), type);
+        ItemTypeData saveData = getTypeData(player.mcServer, type);
         int amount = (saveData.getAmount() + 1) / 9 * 9 + 9;
         if (amount > 54) {
             amount = 54;
         }
         SaverInventory saver = new SaverInventory("物品存储管理器 - " + type, type, amount, false);
         saveData.fill(saver);
-        player.displayGUIChest(saver);
+        displayGuiSaver(player, saver);
+    }
+
+    public static void displayGuiSaver(EntityPlayerMP player, SaverInventory saver) {
+        if (player.openContainer != player.inventoryContainer) {
+            player.closeScreen();
+        }
+        player.getNextWindowId();
+        player.playerNetServerHandler.sendPacket(new S2DPacketOpenWindow(player.currentWindowId, 0, saver.getInventoryName(), saver.getSizeInventory(), saver.hasCustomInventoryName()));
+        player.openContainer = new SaverContainer(player.inventory, saver, player);
+        player.openContainer.windowId = player.currentWindowId;
+        player.openContainer.addCraftingToCrafters(player);
     }
 
     public static ItemMenuData getMenuData(MinecraftServer server) {
-        ItemMenuData menuData = (ItemMenuData) server.getEntityWorld().loadData(ItemMenuData.class, "itemsaver_menu");
+        ItemMenuData menuData = (ItemMenuData) server.getEntityWorld().mapStorage.loadData(ItemMenuData.class, "itemsaver_menu");
         if (menuData == null) {
             menuData = new ItemMenuData("itemsaver_menu");
-            server.getEntityWorld().setData("itemsaver_menu", menuData);
+            server.getEntityWorld().mapStorage.setData("itemsaver_menu", menuData);
         }
         return menuData;
     }
 
     public static ItemTypeData getTypeData(MinecraftServer server, String type) {
-        ItemTypeData typeData = (ItemTypeData) server.getEntityWorld().loadData(ItemTypeData.class, "itemsaver_type_" + type);
+        ItemTypeData typeData = (ItemTypeData) server.getEntityWorld().mapStorage.loadData(ItemTypeData.class, "itemsaver_type_" + type);
         if (typeData == null) {
             typeData = new ItemTypeData("itemsaver_type_" + type);
-            server.getEntityWorld().setData("itemsaver_type_" + type, typeData);
+            server.getEntityWorld().mapStorage.setData("itemsaver_type_" + type, typeData);
         }
         return typeData;
     }
@@ -100,24 +110,24 @@ public class CommonProxy {
     public static void give(EntityPlayer target, ItemStack itemStack, int count) {
         ItemStack it = itemStack.copy();
         if (count > 0) {
-            it.setCount(count);
+            it.stackSize = count;
         }
         boolean flag = target.inventory.addItemStackToInventory(itemStack);
         if (flag) {
-            target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            target.worldObj.playSound(target.posX, target.posY, target.posZ, "ENTITY_ITEM_PICKUP", 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F, false);
             target.inventoryContainer.detectAndSendChanges();
         }
-        if (flag && itemStack.isEmpty()) {
-            itemStack.setCount(1);
-            EntityItem entityitem1 = target.dropItem(itemStack, false);
-            if (entityitem1 != null) {
-                entityitem1.makeFakeItem();
+        if (flag && it.stackSize == 0) {
+            it.stackSize = 1;
+            EntityItem dropItem = target.entityDropItem(it, 0);
+            if (dropItem != null) {
+                dropItem.delayBeforeCanPickup = 32767;
+                dropItem.age = dropItem.getEntityItem().getItem().getEntityLifespan(dropItem.getEntityItem(), dropItem.worldObj) - 1;
             }
         } else {
-            EntityItem entityitem = target.dropItem(itemStack, false);
-            if (entityitem != null) {
-                entityitem.setNoPickupDelay();
-                entityitem.setOwner(target.getName());
+            EntityItem dropItem = target.entityDropItem(it, 0);
+            if (dropItem != null) {
+                dropItem.delayBeforeCanPickup = 0;
             }
         }
     }

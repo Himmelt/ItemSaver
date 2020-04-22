@@ -2,7 +2,6 @@ package org.soraworld.itemsaver.common;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
@@ -17,16 +16,16 @@ public class SaverContainer extends ContainerChest {
     private final SaverInventory inventory;
 
     public SaverContainer(IInventory playerInventory, SaverInventory chestInventory, EntityPlayer player) {
-        super(playerInventory, chestInventory, player);
+        super(playerInventory, chestInventory);
         this.inventory = chestInventory;
         this.amount = chestInventory.getSizeInventory();
     }
 
     @Override
-    public ItemStack slotClick(int slotId, int mouse, ClickType clickType, EntityPlayer player) {
+    public ItemStack slotClick(int slotId, int mouse, int clickType, EntityPlayer player) {
         if (slotId >= 0 && slotId < amount && player instanceof EntityPlayerMP) {
             CommonProxy.runTask(() -> inventory.slotClick(slotId, mouse, clickType, (EntityPlayerMP) player));
-            return ItemStack.EMPTY;
+            return null;
         } else {
             return super.slotClick(slotId, mouse, clickType, player);
         }

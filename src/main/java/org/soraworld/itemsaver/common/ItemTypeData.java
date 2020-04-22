@@ -4,7 +4,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.WorldSavedData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,10 +52,11 @@ public class ItemTypeData extends WorldSavedData {
 
     @Override
     public void readFromNBT(@Nonnull NBTTagCompound nbt) {
-        for (String key : nbt.getKeySet()) {
+        List<String> keys = (List<String>) nbt.func_150296_c();
+        for (String key : keys) {
             try {
                 NBTTagCompound tag = nbt.getCompoundTag(key);
-                stacks.put(key, new ItemStack(tag));
+                stacks.put(key, ItemStack.loadItemStackFromNBT(tag));
             } catch (Throwable ignored) {
                 logger.warn("Invalid nbt tag to read as itemstack for the key : " + key);
             }
@@ -64,9 +65,12 @@ public class ItemTypeData extends WorldSavedData {
 
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(@Nonnull NBTTagCompound compound) {
-        stacks.forEach((name, stack) -> compound.setTag(name, stack.serializeNBT()));
-        return compound;
+    public void writeToNBT(@Nonnull NBTTagCompound compound) {
+        stacks.forEach((name, stack) -> {
+            NBTTagCompound tagCompound = new NBTTagCompound();
+            stack.writeToNBT(tagCompound);
+            compound.setTag(name, tagCompound);
+        });
     }
 
     public int getAmount() {
@@ -78,7 +82,7 @@ public class ItemTypeData extends WorldSavedData {
         List<String> list = new ArrayList<>(stacks.keySet());
         int amount = saver.getSizeInventory();
         for (int i = 0; i < amount; i++) {
-            ItemStack stack = new ItemStack(Blocks.STAINED_GLASS_PANE, 1, i % 16);
+            ItemStack stack = new ItemStack(Blocks.stained_glass_pane, 1, i % 16);
             if (i == amount - 1) {
                 stack.setStackDisplayName("\u00A7r[返回]");
             } else if (i < list.size()) {
