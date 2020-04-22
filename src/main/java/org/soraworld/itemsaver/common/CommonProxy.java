@@ -9,6 +9,7 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.INetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundCategory;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -30,6 +31,7 @@ public class CommonProxy {
 
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(this);
         CHANNEL.register(this);
     }
 

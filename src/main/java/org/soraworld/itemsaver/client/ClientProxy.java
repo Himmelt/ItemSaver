@@ -24,7 +24,6 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void onInit(FMLInitializationEvent event) {
         ClientRegistry.registerKeyBinding(KEY_I_OPEN);
-        MinecraftForge.EVENT_BUS.register(this);
         super.onInit(event);
     }
 
