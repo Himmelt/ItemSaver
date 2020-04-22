@@ -1,5 +1,6 @@
 package org.soraworld.itemsaver.common;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -31,6 +32,7 @@ public class CommonProxy {
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+        FMLCommonHandler.instance().bus().register(this);
         CHANNEL.register(this);
     }
 
@@ -58,7 +60,7 @@ public class CommonProxy {
         int amount = menuData.getAmount() / 9 * 9 + 9;
         SaverInventory menu = new SaverInventory("物品存储管理器 - 类别", "", amount, true);
         menuData.fill(menu);
-        player.displayGUIChest(menu);
+        displayGuiSaver(player, menu);
     }
 
     public static void openType(EntityPlayerMP player, String type) {
@@ -112,7 +114,7 @@ public class CommonProxy {
         if (count > 0) {
             it.stackSize = count;
         }
-        boolean flag = target.inventory.addItemStackToInventory(itemStack);
+        boolean flag = target.inventory.addItemStackToInventory(it);
         if (flag) {
             target.worldObj.playSound(target.posX, target.posY, target.posZ, "ENTITY_ITEM_PICKUP", 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F, false);
             target.inventoryContainer.detectAndSendChanges();
