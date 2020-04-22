@@ -1,5 +1,6 @@
 package org.soraworld.itemsaver.common;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,10 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Himmelt
@@ -33,14 +31,23 @@ public class ItemTypeData extends WorldSavedData {
         return stacks.get(key);
     }
 
-    public void add(String key, ItemStack stack) {
+    public boolean add(String key, ItemStack stack) {
         if (!stacks.containsKey(key)) {
             stacks.put(key, stack);
+            markDirty();
+            return true;
         }
+        return false;
     }
 
     public void set(String key, ItemStack stack) {
         stacks.put(key, stack);
+        markDirty();
+    }
+
+    public void remove(String key) {
+        stacks.remove(key);
+        markDirty();
     }
 
     @Override
@@ -69,14 +76,38 @@ public class ItemTypeData extends WorldSavedData {
     public void fill(SaverInventory saver) {
         saver.clear();
         List<String> list = new ArrayList<>(stacks.keySet());
-        for (int i = 0; i < saver.getSizeInventory(); i++) {
+        int amount = saver.getSizeInventory();
+        for (int i = 0; i < amount; i++) {
             ItemStack stack = new ItemStack(Blocks.STAINED_GLASS_PANE, 1, i % 16);
-            if (i < list.size()) {
+            if (i == amount - 1) {
+                stack.setStackDisplayName("\u00A7r[返回]");
+            } else if (i < list.size()) {
                 stack = stacks.getOrDefault(list.get(i), stack).copy();
+                saver.putKey(i, list.get(i));
             } else {
                 stack.setStackDisplayName("\u00A7r[可添加]");
             }
             saver.setInventorySlotContents(i, stack);
+        }
+    }
+
+    public Set<String> getNames() {
+        return Collections.unmodifiableSet(stacks.keySet());
+    }
+
+    public void clear() {
+        stacks.clear();
+        markDirty();
+    }
+
+    public void give(EntityPlayerMP target, String name, int amount) {
+        if (name != null) {
+            ItemStack stack = stacks.get(name);
+            if (stack != null) {
+                CommonProxy.give(target, stack, amount);
+            }
+        } else {
+            stacks.values().forEach(stack -> CommonProxy.give(target, stack, -1));
         }
     }
 }

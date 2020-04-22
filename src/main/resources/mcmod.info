@@ -5,8 +5,6 @@
     "description": "Save itemstacks to global nbt file.",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://github.com/Himmelt/ItemSaver",
-    "updateUrl": "https://github.com/Himmelt/ItemSaver",
     "authorList": [
       "Himmelt"
     ],
