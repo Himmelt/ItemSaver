@@ -56,7 +56,7 @@ public class CommandSaver extends CommandBase {
                         data.give(target, name, amount);
                         CommandBase.notifyCommandListener(sender, this, "commands.give.success", new TextComponentString(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getName());
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv give <player> type [item] [amount]"));
+                        sender.sendMessage(new TextComponentString("/isv give <player> <type> [item] [amount]"));
                     }
                     break;
                 case "add":
@@ -72,7 +72,7 @@ public class CommandSaver extends CommandBase {
                             sender.sendMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
                         }
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv add type name"));
+                        sender.sendMessage(new TextComponentString("/isv add <type> <name>"));
                     }
                     break;
                 case "set":
@@ -85,10 +85,22 @@ public class CommandSaver extends CommandBase {
                             sender.sendMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
                         }
                     } else {
-                        sender.sendMessage(new TextComponentString("/isv set type name"));
+                        sender.sendMessage(new TextComponentString("/isv set <type> <name>"));
                     }
                     break;
                 case "remove":
+                    if (args.length >= 2) {
+                        String type = args[1];
+                        if (args.length >= 3) {
+                            CommonProxy.getTypeData(server, type).remove(args[2]);
+                            sender.sendMessage(new TextComponentString("已移除分类 - " + type + " 下的物品 - " + args[2]));
+                        } else {
+                            CommonProxy.getTypeData(server, type).clear();
+                            sender.sendMessage(new TextComponentString("已移除分类 - " + type));
+                        }
+                    } else {
+                        sender.sendMessage(new TextComponentString("/isv remove <type> [name]"));
+                    }
                     break;
                 case "open":
                     if (sender instanceof EntityPlayerMP) {
