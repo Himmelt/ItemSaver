@@ -1,45 +1,36 @@
 package org.soraworld.itemsaver;
 
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import org.soraworld.itemsaver.api.ItemSaverAPI;
-import org.soraworld.itemsaver.command.CommandSaver;
-import org.soraworld.itemsaver.constant.IMod;
+import org.soraworld.itemsaver.common.CommandSaver;
+import org.soraworld.itemsaver.common.CommonProxy;
 
-import java.io.File;
-
+/**
+ * @author Himmelt
+ */
 @Mod(
-        modid = IMod.MODID,
-        name = IMod.NAME,
-        version = IMod.VERSION,
-        acceptedMinecraftVersions = IMod.ACMCVERSION
+        modid = "itemsaver",
+        name = "ItemSaver",
+        canBeDeactivated = true,
+        acceptableRemoteVersions = "*"
 )
-public class ItemSaver {
+public final class ItemSaver {
 
-    public static ItemSaverAPI api;
+    @SidedProxy(
+            clientSide = "org.soraworld.itemsaver.client.ClientProxy",
+            serverSide = "org.soraworld.itemsaver.common.CommonProxy"
+    )
+    public static CommonProxy proxy;
 
     @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event) {
-        World world = event.getServer().getEntityWorld();
-        if (world instanceof WorldServer) {
-            try {
-                event.registerServerCommand(new CommandSaver());
-                File dataDir = new File(((WorldServer) world).getChunkSaveLocation(), "data");
-                File dataFile = new File(dataDir, IMod.MODID + ".dat");
-                api = new ItemSaverAPI(dataFile);
-                api.reload();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    public void onInit(FMLInitializationEvent event) {
+        proxy.onInit(event);
     }
 
     @Mod.EventHandler
-    public void serverStopping(FMLServerStoppingEvent event) {
-        api.save();
-        api = null;
+    public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CommandSaver());
     }
 }
