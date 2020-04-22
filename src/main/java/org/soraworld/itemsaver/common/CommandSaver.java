@@ -92,10 +92,10 @@ public class CommandSaver extends CommandBase {
                     if (args.length >= 2) {
                         String type = args[1];
                         if (args.length >= 3) {
-                            CommonProxy.getTypeData(server, type).remove(args[2]);
+                            CommonProxy.removeItem(server, type, args[2]);
                             sender.sendMessage(new TextComponentString("已移除分类 - " + type + " 下的物品 - " + args[2]));
                         } else {
-                            CommonProxy.getTypeData(server, type).clear();
+                            CommonProxy.removeType(server, type);
                             sender.sendMessage(new TextComponentString("已移除分类 - " + type));
                         }
                     } else {
