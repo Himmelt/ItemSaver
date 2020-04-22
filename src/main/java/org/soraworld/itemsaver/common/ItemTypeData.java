@@ -28,12 +28,13 @@ public class ItemTypeData extends WorldSavedData {
     }
 
     public ItemStack get(String key) {
-        return stacks.get(key);
+        ItemStack stack = stacks.get(key);
+        return stack == null ? null : stack.copy();
     }
 
     public boolean add(String key, ItemStack stack) {
         if (!stacks.containsKey(key)) {
-            stacks.put(key, stack);
+            stacks.put(key, stack.copy());
             markDirty();
             return true;
         }
@@ -41,7 +42,7 @@ public class ItemTypeData extends WorldSavedData {
     }
 
     public void set(String key, ItemStack stack) {
-        stacks.put(key, stack);
+        stacks.put(key, stack.copy());
         markDirty();
     }
 
@@ -104,10 +105,10 @@ public class ItemTypeData extends WorldSavedData {
         if (name != null) {
             ItemStack stack = stacks.get(name);
             if (stack != null) {
-                CommonProxy.give(target, stack, amount);
+                CommonProxy.give(target, stack.copy(), amount);
             }
         } else {
-            stacks.values().forEach(stack -> CommonProxy.give(target, stack, -1));
+            stacks.values().forEach(stack -> CommonProxy.give(target, stack.copy(), -1));
         }
     }
 }

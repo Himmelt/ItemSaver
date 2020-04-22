@@ -102,7 +102,7 @@ public class CommonProxy {
         if (count > 0) {
             it.setCount(count);
         }
-        boolean flag = target.inventory.addItemStackToInventory(itemStack);
+        boolean flag = target.inventory.addItemStackToInventory(it);
         if (flag) {
             target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             target.inventoryContainer.detectAndSendChanges();
