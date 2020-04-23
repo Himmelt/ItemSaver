@@ -110,24 +110,24 @@ public class CommonProxy {
     }
 
     public static void give(EntityPlayer target, ItemStack itemStack, int count) {
-        ItemStack it = itemStack.copy();
+        ItemStack stack = itemStack.copy();
         if (count > 0) {
-            it.stackSize = count;
+            stack.stackSize = count;
         }
-        boolean flag = target.inventory.addItemStackToInventory(it);
+        boolean flag = target.inventory.addItemStackToInventory(stack);
         if (flag) {
             target.worldObj.playSound(target.posX, target.posY, target.posZ, "ENTITY_ITEM_PICKUP", 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F, false);
             target.inventoryContainer.detectAndSendChanges();
         }
-        if (flag && it.stackSize == 0) {
-            it.stackSize = 1;
-            EntityItem dropItem = target.entityDropItem(it, 0);
+        if (flag && stack.stackSize == 0) {
+            stack.stackSize = 1;
+            EntityItem dropItem = target.entityDropItem(stack, 0);
             if (dropItem != null) {
                 dropItem.delayBeforeCanPickup = 32767;
                 dropItem.age = dropItem.getEntityItem().getItem().getEntityLifespan(dropItem.getEntityItem(), dropItem.worldObj) - 1;
             }
         } else {
-            EntityItem dropItem = target.entityDropItem(it, 0);
+            EntityItem dropItem = target.entityDropItem(stack, 0);
             if (dropItem != null) {
                 dropItem.delayBeforeCanPickup = 0;
             }
