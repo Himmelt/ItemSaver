@@ -4,7 +4,7 @@
     "name": "ItemSaver",
     "description": "Save itemstacks to global nbt file.",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "[1.9.4,1.10.2]",
     "authorList": [
       "Himmelt"
     ],
