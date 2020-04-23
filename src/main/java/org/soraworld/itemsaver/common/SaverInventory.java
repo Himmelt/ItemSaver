@@ -54,7 +54,7 @@ public class SaverInventory extends InventoryBasic implements IInteractionObject
                     player.closeScreen();
                     CommonProxy.openMenu(player);
                 } else if (keys.containsKey(slotId)) {
-                    CommonProxy.getTypeData(player.server, type).give(player, keys.get(slotId), -1);
+                    CommonProxy.getTypeData(player.mcServer, type).give(player, keys.get(slotId), -1);
                 }
             }
         }
