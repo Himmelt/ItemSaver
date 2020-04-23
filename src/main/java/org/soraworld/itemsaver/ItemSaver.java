@@ -1,9 +1,9 @@
 package org.soraworld.itemsaver;
 
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.soraworld.itemsaver.common.CommandSaver;
 import org.soraworld.itemsaver.common.CommonProxy;
 
@@ -14,7 +14,8 @@ import org.soraworld.itemsaver.common.CommonProxy;
         modid = "itemsaver",
         name = "ItemSaver",
         canBeDeactivated = true,
-        acceptableRemoteVersions = "*"
+        acceptableRemoteVersions = "*",
+        useMetadata = true
 )
 public final class ItemSaver {
 

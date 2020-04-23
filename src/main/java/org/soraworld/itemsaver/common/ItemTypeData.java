@@ -53,7 +53,7 @@ public class ItemTypeData extends WorldSavedData {
 
     @Override
     public void readFromNBT(@Nonnull NBTTagCompound nbt) {
-        Set<String> keys = (Set<String>) nbt.func_150296_c();
+        Set<String> keys = (Set<String>) nbt.getKeySet();
         for (String key : keys) {
             try {
                 NBTTagCompound tag = nbt.getCompoundTag(key);

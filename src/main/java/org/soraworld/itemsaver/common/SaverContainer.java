@@ -16,7 +16,7 @@ public class SaverContainer extends ContainerChest {
     private final SaverInventory inventory;
 
     public SaverContainer(IInventory playerInventory, SaverInventory chestInventory, EntityPlayer player) {
-        super(playerInventory, chestInventory);
+        super(playerInventory, chestInventory, player);
         this.inventory = chestInventory;
         this.amount = chestInventory.getSizeInventory();
     }

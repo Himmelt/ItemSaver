@@ -1,7 +1,11 @@
 package org.soraworld.itemsaver.common;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryBasic;
+import net.minecraft.world.IInteractionObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +13,7 @@ import java.util.Map;
 /**
  * @author Himmelt
  */
-public class SaverInventory extends InventoryBasic {
+public class SaverInventory extends InventoryBasic implements IInteractionObject {
 
     private final String type;
     private final boolean isMenu;
@@ -43,9 +47,13 @@ public class SaverInventory extends InventoryBasic {
         }
     }
 
-    public void clear() {
-        for (int i = 0; i < getSizeInventory(); i++) {
-            setInventorySlotContents(i, null);
-        }
+    @Override
+    public Container createContainer(InventoryPlayer playerInventory, EntityPlayer player) {
+        return new SaverContainer(playerInventory, this, player);
+    }
+
+    @Override
+    public String getGuiID() {
+        return "minecraft:chest";
     }
 }

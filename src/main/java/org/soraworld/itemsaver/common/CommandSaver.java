@@ -6,6 +6,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public class CommandSaver extends CommandBase {
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "itemsaver";
     }
 
@@ -32,12 +33,12 @@ public class CommandSaver extends CommandBase {
     }
 
     @Override
-    public List<String> getCommandAliases() {
+    public List<String> getAliases() {
         return Arrays.asList("saver", "isv");
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+    public void execute(ICommandSender sender, String[] args) throws CommandException {
         MinecraftServer server = MinecraftServer.getServer();
         if (args.length > 0) {
             switch (args[0]) {
@@ -52,7 +53,7 @@ public class CommandSaver extends CommandBase {
                         ItemTypeData data = CommonProxy.getTypeData(server, type);
                         int amount = args.length >= 5 ? Integer.parseInt(args[4]) : -1;
                         data.give(target, name, amount);
-                        CommandBase.func_152373_a(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getCommandSenderName());
+                        CommandBase.notifyOperators(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getName());
                     } else {
                         sender.addChatMessage(new ChatComponentText("/isv give <player> <type> [item] [amount]"));
                     }
@@ -116,12 +117,12 @@ public class CommandSaver extends CommandBase {
     }
 
     @Override
-    public boolean canCommandSenderUseCommand(ICommandSender sender) {
-        return sender.canCommandSenderUseCommand(2, "gamemode");
+    public boolean canCommandSenderUse(ICommandSender sender) {
+        return sender.canUseCommand(2, "gamemode");
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if ("give".equals(args[0])) {
             MinecraftServer server = MinecraftServer.getServer();
             switch (args.length) {

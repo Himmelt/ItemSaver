@@ -1,22 +1,21 @@
 package org.soraworld.itemsaver.common;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.network.FMLEventChannel;
-import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.INetHandlerPlayServer;
-import net.minecraft.network.play.server.S2DPacketOpenWindow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLEventChannel;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ public class CommonProxy {
         INetHandlerPlayServer handler = event.handler;
         if (handler instanceof NetHandlerPlayServer) {
             EntityPlayerMP mp = ((NetHandlerPlayServer) handler).playerEntity;
-            if (mp.canCommandSenderUseCommand(2, "gamemode")) {
+            if (mp.canUseCommand(2, "gamemode")) {
                 openMenu(mp);
             }
         }
@@ -60,7 +59,7 @@ public class CommonProxy {
         int amount = menuData.getAmount() / 9 * 9 + 9;
         SaverInventory menu = new SaverInventory("物品存储管理器 - 类别", "", amount, true);
         menuData.fill(menu);
-        displayGuiSaver(player, menu);
+        player.displayGUIChest(menu);
     }
 
     public static void openType(EntityPlayerMP player, String type) {
@@ -71,34 +70,23 @@ public class CommonProxy {
         }
         SaverInventory saver = new SaverInventory("物品存储管理器 - " + type, type, amount, false);
         saveData.fill(saver);
-        displayGuiSaver(player, saver);
-    }
-
-    public static void displayGuiSaver(EntityPlayerMP player, SaverInventory saver) {
-        if (player.openContainer != player.inventoryContainer) {
-            player.closeScreen();
-        }
-        player.getNextWindowId();
-        player.playerNetServerHandler.sendPacket(new S2DPacketOpenWindow(player.currentWindowId, 0, saver.getInventoryName(), saver.getSizeInventory(), saver.hasCustomInventoryName()));
-        player.openContainer = new SaverContainer(player.inventory, saver, player);
-        player.openContainer.windowId = player.currentWindowId;
-        player.openContainer.addCraftingToCrafters(player);
+        player.displayGUIChest(saver);
     }
 
     public static ItemMenuData getMenuData(MinecraftServer server) {
-        ItemMenuData menuData = (ItemMenuData) server.getEntityWorld().mapStorage.loadData(ItemMenuData.class, "itemsaver_menu");
+        ItemMenuData menuData = (ItemMenuData) server.getEntityWorld().getMapStorage().loadData(ItemMenuData.class, "itemsaver_menu");
         if (menuData == null) {
             menuData = new ItemMenuData("itemsaver_menu");
-            server.getEntityWorld().mapStorage.setData("itemsaver_menu", menuData);
+            server.getEntityWorld().getMapStorage().setData("itemsaver_menu", menuData);
         }
         return menuData;
     }
 
     public static ItemTypeData getTypeData(MinecraftServer server, String type) {
-        ItemTypeData typeData = (ItemTypeData) server.getEntityWorld().mapStorage.loadData(ItemTypeData.class, "itemsaver_type_" + type);
+        ItemTypeData typeData = (ItemTypeData) server.getEntityWorld().getMapStorage().loadData(ItemTypeData.class, "itemsaver_type_" + type);
         if (typeData == null) {
             typeData = new ItemTypeData("itemsaver_type_" + type);
-            server.getEntityWorld().mapStorage.setData("itemsaver_type_" + type, typeData);
+            server.getEntityWorld().getMapStorage().setData("itemsaver_type_" + type, typeData);
         }
         return typeData;
     }
@@ -116,20 +104,21 @@ public class CommonProxy {
         }
         boolean flag = target.inventory.addItemStackToInventory(stack);
         if (flag) {
-            target.worldObj.playSound(target.posX, target.posY, target.posZ, "ENTITY_ITEM_PICKUP", 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F, false);
+            target.worldObj.playSoundAtEntity(target, "random.pop", 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             target.inventoryContainer.detectAndSendChanges();
         }
-        if (flag && stack.stackSize == 0) {
+        EntityItem entityitem;
+        if (flag && stack.stackSize <= 0) {
             stack.stackSize = 1;
-            EntityItem dropItem = target.entityDropItem(stack, 0);
-            if (dropItem != null) {
-                dropItem.delayBeforeCanPickup = 32767;
-                dropItem.age = dropItem.getEntityItem().getItem().getEntityLifespan(dropItem.getEntityItem(), dropItem.worldObj) - 1;
+            entityitem = target.dropPlayerItemWithRandomChoice(stack, false);
+            if (entityitem != null) {
+                entityitem.func_174870_v();
             }
         } else {
-            EntityItem dropItem = target.entityDropItem(stack, 0);
-            if (dropItem != null) {
-                dropItem.delayBeforeCanPickup = 0;
+            entityitem = target.dropPlayerItemWithRandomChoice(stack, false);
+            if (entityitem != null) {
+                entityitem.setNoPickupDelay();
+                entityitem.setOwner(target.getName());
             }
         }
     }
