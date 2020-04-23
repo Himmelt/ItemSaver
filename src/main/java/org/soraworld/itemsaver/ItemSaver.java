@@ -14,7 +14,8 @@ import org.soraworld.itemsaver.common.CommonProxy;
         modid = "itemsaver",
         name = "ItemSaver",
         canBeDeactivated = true,
-        acceptableRemoteVersions = "*"
+        acceptableRemoteVersions = "*",
+        useMetadata = true
 )
 public final class ItemSaver {
 
