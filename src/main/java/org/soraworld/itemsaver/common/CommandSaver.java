@@ -53,7 +53,7 @@ public class CommandSaver extends CommandBase {
                         ItemTypeData data = CommonProxy.getTypeData(server, type);
                         int amount = args.length >= 5 ? Integer.parseInt(args[4]) : -1;
                         data.give(target, name, amount);
-                        CommandBase.notifyOperators(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getCommandSenderName());
+                        CommandBase.notifyOperators(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getName());
                     } else {
                         sender.addChatMessage(new ChatComponentText("/isv give <player> <type> [item] [amount]"));
                     }

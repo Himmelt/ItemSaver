@@ -118,7 +118,7 @@ public class CommonProxy {
             entityitem = target.dropPlayerItemWithRandomChoice(stack, false);
             if (entityitem != null) {
                 entityitem.setNoPickupDelay();
-                entityitem.setOwner(target.getCommandSenderName());
+                entityitem.setOwner(target.getName());
             }
         }
     }
