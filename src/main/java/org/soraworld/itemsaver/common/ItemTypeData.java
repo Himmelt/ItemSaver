@@ -56,7 +56,7 @@ public class ItemTypeData extends WorldSavedData {
         for (String key : nbt.getKeySet()) {
             try {
                 NBTTagCompound tag = nbt.getCompoundTag(key);
-                stacks.put(key, new ItemStack(tag));
+                stacks.put(key, ItemStack.loadItemStackFromNBT(tag));
             } catch (Throwable ignored) {
                 logger.warn("Invalid nbt tag to read as itemstack for the key : " + key);
             }

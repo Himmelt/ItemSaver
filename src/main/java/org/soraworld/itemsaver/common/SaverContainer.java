@@ -26,7 +26,7 @@ public class SaverContainer extends ContainerChest {
     public ItemStack slotClick(int slotId, int mouse, ClickType clickType, EntityPlayer player) {
         if (slotId >= 0 && slotId < amount && player instanceof EntityPlayerMP) {
             CommonProxy.runTask(() -> inventory.slotClick(slotId, mouse, clickType, (EntityPlayerMP) player));
-            return ItemStack.EMPTY;
+            return null;
         } else {
             return super.slotClick(slotId, mouse, clickType, player);
         }

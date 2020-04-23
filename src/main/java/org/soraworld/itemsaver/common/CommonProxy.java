@@ -39,8 +39,8 @@ public class CommonProxy {
     public void onMessage(FMLNetworkEvent.ServerCustomPacketEvent event) {
         INetHandlerPlayServer handler = event.getHandler();
         if (handler instanceof NetHandlerPlayServer) {
-            EntityPlayerMP mp = ((NetHandlerPlayServer) handler).player;
-            if (mp.canUseCommand(2, "gamemode")) {
+            EntityPlayerMP mp = ((NetHandlerPlayServer) handler).playerEntity;
+            if (mp.canCommandSenderUseCommand(2, "gamemode")) {
                 openMenu(mp);
             }
         }
@@ -74,19 +74,19 @@ public class CommonProxy {
     }
 
     public static ItemMenuData getMenuData(MinecraftServer server) {
-        ItemMenuData menuData = (ItemMenuData) server.getEntityWorld().loadData(ItemMenuData.class, "itemsaver_menu");
+        ItemMenuData menuData = (ItemMenuData) server.getEntityWorld().getMapStorage().getOrLoadData(ItemMenuData.class, "itemsaver_menu");
         if (menuData == null) {
             menuData = new ItemMenuData("itemsaver_menu");
-            server.getEntityWorld().setData("itemsaver_menu", menuData);
+            server.getEntityWorld().getMapStorage().setData("itemsaver_menu", menuData);
         }
         return menuData;
     }
 
     public static ItemTypeData getTypeData(MinecraftServer server, String type) {
-        ItemTypeData typeData = (ItemTypeData) server.getEntityWorld().loadData(ItemTypeData.class, "itemsaver_type_" + type);
+        ItemTypeData typeData = (ItemTypeData) server.getEntityWorld().getMapStorage().getOrLoadData(ItemTypeData.class, "itemsaver_type_" + type);
         if (typeData == null) {
             typeData = new ItemTypeData("itemsaver_type_" + type);
-            server.getEntityWorld().setData("itemsaver_type_" + type, typeData);
+            server.getEntityWorld().getMapStorage().setData("itemsaver_type_" + type, typeData);
         }
         return typeData;
     }
@@ -100,21 +100,21 @@ public class CommonProxy {
     public static void give(EntityPlayer target, ItemStack itemStack, int count) {
         ItemStack it = itemStack.copy();
         if (count > 0) {
-            it.setCount(count);
+            it.stackSize = count;
         }
         boolean flag = target.inventory.addItemStackToInventory(it);
         if (flag) {
-            target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            target.worldObj.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             target.inventoryContainer.detectAndSendChanges();
         }
-        if (flag && itemStack.isEmpty()) {
-            itemStack.setCount(1);
-            EntityItem entityitem1 = target.dropItem(itemStack, false);
+        if (flag && it.stackSize <= 0) {
+            it.stackSize = 1;
+            EntityItem entityitem1 = target.dropItem(it, false);
             if (entityitem1 != null) {
                 entityitem1.makeFakeItem();
             }
         } else {
-            EntityItem entityitem = target.dropItem(itemStack, false);
+            EntityItem entityitem = target.dropItem(it, false);
             if (entityitem != null) {
                 entityitem.setNoPickupDelay();
                 entityitem.setOwner(target.getName());
