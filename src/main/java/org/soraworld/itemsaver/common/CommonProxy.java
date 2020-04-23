@@ -98,23 +98,23 @@ public class CommonProxy {
     }
 
     public static void give(EntityPlayer target, ItemStack itemStack, int count) {
-        ItemStack it = itemStack.copy();
+        ItemStack stack = itemStack.copy();
         if (count > 0) {
-            it.setCount(count);
+            stack.setCount(count);
         }
-        boolean flag = target.inventory.addItemStackToInventory(it);
+        boolean flag = target.inventory.addItemStackToInventory(stack);
         if (flag) {
             target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             target.inventoryContainer.detectAndSendChanges();
         }
-        if (flag && itemStack.isEmpty()) {
-            itemStack.setCount(1);
-            EntityItem entityitem1 = target.dropItem(itemStack, false);
+        if (flag && stack.isEmpty()) {
+            stack.setCount(1);
+            EntityItem entityitem1 = target.dropItem(stack, false);
             if (entityitem1 != null) {
                 entityitem1.makeFakeItem();
             }
         } else {
-            EntityItem entityitem = target.dropItem(itemStack, false);
+            EntityItem entityitem = target.dropItem(stack, false);
             if (entityitem != null) {
                 entityitem.setNoPickupDelay();
                 entityitem.setOwner(target.getName());
