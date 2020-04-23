@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class CommandSaver extends CommandBase {
     @Override
-    public String getName() {
+    public String getCommandName() {
         return "itemsaver";
     }
 
@@ -33,12 +33,12 @@ public class CommandSaver extends CommandBase {
     }
 
     @Override
-    public List<String> getAliases() {
+    public List<String> getCommandAliases() {
         return Arrays.asList("saver", "isv");
     }
 
     @Override
-    public void execute(ICommandSender sender, String[] args) throws CommandException {
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
         MinecraftServer server = MinecraftServer.getServer();
         if (args.length > 0) {
             switch (args[0]) {
@@ -53,7 +53,7 @@ public class CommandSaver extends CommandBase {
                         ItemTypeData data = CommonProxy.getTypeData(server, type);
                         int amount = args.length >= 5 ? Integer.parseInt(args[4]) : -1;
                         data.give(target, name, amount);
-                        CommandBase.notifyOperators(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getName());
+                        CommandBase.notifyOperators(sender, this, "commands.give.success", new ChatComponentText(" [" + type + (name == null ? "" : "-" + name) + "] "), 1, target.getCommandSenderName());
                     } else {
                         sender.addChatMessage(new ChatComponentText("/isv give <player> <type> [item] [amount]"));
                     }
@@ -117,8 +117,8 @@ public class CommandSaver extends CommandBase {
     }
 
     @Override
-    public boolean canCommandSenderUse(ICommandSender sender) {
-        return sender.canUseCommand(2, "gamemode");
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return sender.canCommandSenderUseCommand(2, "gamemode");
     }
 
     @Override

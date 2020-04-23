@@ -40,7 +40,7 @@ public class CommonProxy {
         INetHandlerPlayServer handler = event.handler;
         if (handler instanceof NetHandlerPlayServer) {
             EntityPlayerMP mp = ((NetHandlerPlayServer) handler).playerEntity;
-            if (mp.canUseCommand(2, "gamemode")) {
+            if (mp.canCommandSenderUseCommand(2, "gamemode")) {
                 openMenu(mp);
             }
         }
@@ -118,7 +118,7 @@ public class CommonProxy {
             entityitem = target.dropPlayerItemWithRandomChoice(stack, false);
             if (entityitem != null) {
                 entityitem.setNoPickupDelay();
-                entityitem.setOwner(target.getName());
+                entityitem.setOwner(target.getCommandSenderName());
             }
         }
     }
