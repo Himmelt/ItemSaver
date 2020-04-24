@@ -14,6 +14,7 @@ import org.soraworld.itemsaver.common.CommonProxy;
         modid = "itemsaver",
         name = "ItemSaver",
         canBeDeactivated = true,
+        acceptedMinecraftVersions = "[1.9.4,1.10.2]",
         acceptableRemoteVersions = "*",
         useMetadata = true
 )
