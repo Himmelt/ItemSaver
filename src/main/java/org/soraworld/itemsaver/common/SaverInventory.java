@@ -6,6 +6,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryBasic;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.IInteractionObject;
 
 import javax.annotation.Nonnull;
@@ -22,7 +23,7 @@ public class SaverInventory extends InventoryBasic implements IInteractionObject
     private final Map<Integer, String> keys = new HashMap<>();
 
     public SaverInventory(String title, String type, int slotCount, boolean isMenu) {
-        super(title, true, slotCount);
+        super(new TextComponentString(title), slotCount);
         this.type = type;
         this.isMenu = isMenu;
     }

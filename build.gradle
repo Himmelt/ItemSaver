@@ -1,48 +1,76 @@
 buildscript {
     repositories {
+        maven { url 'https://files.minecraftforge.net/maven' }
         maven { url 'https://maven.aliyun.com/repository/public/' }
-        maven { url 'https://crystal.app.lss233.com/repositories/minecraft' }
+        maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'net.sf.proguard:proguard-gradle:6.2.2'
+        classpath group: 'org.soraworld', name: 'ForgeGradleURI', version: '3.+', changing: true
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 
-version = "1.2.0"
-group = "org.soraworld"
-archivesBaseName = rootProject.name + "-1.12.2"
+ext {
+    mcpRenameJavadoc = false
+}
+
+version = '1.2.0'
+group = 'org.soraworld'
+archivesBaseName = 'ItemSaver-1.13.2'
 
 sourceCompatibility = targetCompatibility = 1.8
 
 repositories {
+    maven { url 'https://files.minecraftforge.net/maven' }
     maven { url 'https://maven.aliyun.com/repository/public/' }
-    maven { url 'https://crystal.app.lss233.com/repositories/minecraft' }
+    maven { url 'https://lss233.littleservice.cn/repositories/minecraft' }
 }
 
 minecraft {
-    version = "1.12.2-14.23.5.2847"
-    mappings = "snapshot_20180814"
-    runDir = "build/run"
+    mappings channel: 'snapshot', version: '20190530-1.13.2'
+    runs {
+        client {
+            workingDirectory project.file('run/client')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+        server {
+            workingDirectory project.file('run/server')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.13.2-25.0.219'
 }
 
 processResources {
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+        include 'META-INF/mods.toml'
+        expand 'version': project.version
     }
+}
 
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+gradle.addURIListener {
+    String uri = it
+            .replaceAll('https://files.minecraftforge.net/maven', 'https://bmclapi2.bangbang93.com/maven')
+            .replaceAll('https://libraries.minecraft.net/', 'https://mclib.mirrors.tmysam.top/')
+            .replaceAll('https://launcher.mojang.com/v1/objects', 'https://mc.mirrors.tmysam.top/v1/objects')
+            .replaceAll('https://resources.download.minecraft.net/cd/', 'https://mcres.mirrors.tmysam.top/cd/')
+    println uri
+    return uri
 }

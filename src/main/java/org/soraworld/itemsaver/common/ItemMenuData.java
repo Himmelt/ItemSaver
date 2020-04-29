@@ -1,13 +1,12 @@
 package org.soraworld.itemsaver.common;
 
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.storage.WorldSavedData;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
@@ -21,6 +20,22 @@ public class ItemMenuData extends WorldSavedData {
         super(name);
     }
 
+    @Override
+    public void read(NBTTagCompound nbt) {
+        NBTTagList list = nbt.getList("types", 8);
+        for (int i = 0; i < list.size(); i++) {
+            types.add(list.getString(i));
+        }
+    }
+
+    @Override
+    public NBTTagCompound write(NBTTagCompound compound) {
+        NBTTagList list = new NBTTagList();
+        types.forEach(type -> list.add(new NBTTagString(type)));
+        compound.put("types", list);
+        return compound;
+    }
+
     public void add(String type) {
         types.add(type);
         markDirty();
@@ -31,23 +46,6 @@ public class ItemMenuData extends WorldSavedData {
         markDirty();
     }
 
-    @Override
-    public void readFromNBT(@Nonnull NBTTagCompound nbt) {
-        NBTTagList list = nbt.getTagList("types", 8);
-        for (int i = 0; i < list.tagCount(); i++) {
-            types.add(list.getStringTagAt(i));
-        }
-    }
-
-    @Nonnull
-    @Override
-    public NBTTagCompound writeToNBT(@Nonnull NBTTagCompound compound) {
-        NBTTagList list = new NBTTagList();
-        types.forEach(type -> list.appendTag(new NBTTagString(type)));
-        compound.setTag("types", list);
-        return compound;
-    }
-
     public int getAmount() {
         return types.size();
     }
@@ -56,12 +54,12 @@ public class ItemMenuData extends WorldSavedData {
         menu.clear();
         List<String> list = new ArrayList<>(types);
         for (int i = 0; i < menu.getSizeInventory(); i++) {
-            ItemStack stack = new ItemStack(Blocks.STAINED_GLASS_PANE, 1, i % 16);
+            ItemStack stack = GlassPanes.getGlassPane(i);
             if (i < list.size()) {
-                stack.setStackDisplayName("\u00A7r" + list.get(i));
+                stack.setDisplayName(new TextComponentString("\u00A7r" + list.get(i)));
                 menu.putKey(i, list.get(i));
             } else {
-                stack.setStackDisplayName("\u00A7r[可添加]");
+                stack.setDisplayName(new TextComponentString("\u00A7r[可添加]"));
             }
             menu.setInventorySlotContents(i, stack);
         }

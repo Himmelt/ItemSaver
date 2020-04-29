@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[25,)"
+logoFile="logo.png"
+
+[[mods]]
+modId="itemsaver"
+version="${version}"
+displayName="ItemSaver"
+credits="Himmelt, making this mod."
+authors="Himmelt"
+description='''
+ItemSaver Mod , Copyright (c) 2018-2020 Himmelt.
+'''

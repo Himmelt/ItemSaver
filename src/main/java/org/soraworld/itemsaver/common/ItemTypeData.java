@@ -1,9 +1,9 @@
 package org.soraworld.itemsaver.common;
 
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.storage.WorldSavedData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,11 +52,11 @@ public class ItemTypeData extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(@Nonnull NBTTagCompound nbt) {
-        for (String key : nbt.getKeySet()) {
+    public void read(@Nonnull NBTTagCompound nbt) {
+        for (String key : nbt.keySet()) {
             try {
-                NBTTagCompound tag = nbt.getCompoundTag(key);
-                stacks.put(key, new ItemStack(tag));
+                NBTTagCompound tag = nbt.getCompound(key);
+                stacks.put(key, ItemStack.read(tag));
             } catch (Throwable ignored) {
                 logger.warn("Invalid nbt tag to read as itemstack for the key : " + key);
             }
@@ -65,8 +65,8 @@ public class ItemTypeData extends WorldSavedData {
 
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(@Nonnull NBTTagCompound compound) {
-        stacks.forEach((name, stack) -> compound.setTag(name, stack.serializeNBT()));
+    public NBTTagCompound write(@Nonnull NBTTagCompound compound) {
+        stacks.forEach((name, stack) -> compound.put(name, stack.serializeNBT()));
         return compound;
     }
 
@@ -79,14 +79,14 @@ public class ItemTypeData extends WorldSavedData {
         List<String> list = new ArrayList<>(stacks.keySet());
         int amount = saver.getSizeInventory();
         for (int i = 0; i < amount; i++) {
-            ItemStack stack = new ItemStack(Blocks.STAINED_GLASS_PANE, 1, i % 16);
+            ItemStack stack = GlassPanes.getGlassPane(i);
             if (i == amount - 1) {
-                stack.setStackDisplayName("\u00A7r[返回]");
+                stack.setDisplayName(new TextComponentString("\u00A7r[返回]"));
             } else if (i < list.size()) {
                 stack = stacks.getOrDefault(list.get(i), stack).copy();
                 saver.putKey(i, list.get(i));
             } else {
-                stack.setStackDisplayName("\u00A7r[可添加]");
+                stack.setDisplayName(new TextComponentString("\u00A7r[可添加]"));
             }
             saver.setInventorySlotContents(i, stack);
         }
