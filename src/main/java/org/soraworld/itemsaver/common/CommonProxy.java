@@ -57,7 +57,7 @@ public class CommonProxy {
 
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        SaverCommand.register(event.getCommandDispatcher(), this);
+        SaverCommand.register(event.getCommandDispatcher());
     }
 
     @SubscribeEvent
