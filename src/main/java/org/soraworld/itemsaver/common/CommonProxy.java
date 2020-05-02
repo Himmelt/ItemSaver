@@ -1,13 +1,13 @@
 package org.soraworld.itemsaver.common;
 
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -44,7 +44,7 @@ public class CommonProxy {
 
     public void processOpenPacket(OpenPacket packet, Supplier<NetworkEvent.Context> context) {
         if (EffectiveSide.get() == LogicalSide.SERVER) {
-            EntityPlayerMP player = context.get().getSender();
+            ServerPlayerEntity player = context.get().getSender();
             if (player != null) {
                 context.get().enqueueWork(() -> openMenu(player));
             }
@@ -68,17 +68,17 @@ public class CommonProxy {
         TASKS.clear();
     }
 
-    public static void openMenu(EntityPlayerMP player) {
+    public static void openMenu(ServerPlayerEntity player) {
         if (player != null && player.hasPermissionLevel(2)) {
             ItemMenuData menuData = getMenuData(player.server);
             int amount = menuData.getAmount() / 9 * 9 + 9;
             SaverInventory menu = new SaverInventory("物品存储管理器 - 类别", "", amount, true);
             menuData.fill(menu);
-            player.displayGUIChest(menu);
+            player.openContainer(menu);
         }
     }
 
-    public static void openType(EntityPlayerMP player, String type) {
+    public static void openType(ServerPlayerEntity player, String type) {
         if (player != null && player.hasPermissionLevel(2)) {
             ItemTypeData saveData = getTypeData(player.server, type);
             int amount = (saveData.getAmount() + 1) / 9 * 9 + 9;
@@ -87,26 +87,16 @@ public class CommonProxy {
             }
             SaverInventory saver = new SaverInventory("物品存储管理器 - " + type, type, amount, false);
             saveData.fill(saver);
-            player.displayGUIChest(saver);
+            player.openContainer(saver);
         }
     }
 
     public static ItemMenuData getMenuData(MinecraftServer server) {
-        ItemMenuData menuData = server.getWorld(DimensionType.OVERWORLD).getSavedData(DimensionType.OVERWORLD, ItemMenuData::new, "itemsaver_menu");
-        if (menuData == null) {
-            menuData = new ItemMenuData("itemsaver_menu");
-            server.getWorld(DimensionType.OVERWORLD).setSavedData(DimensionType.OVERWORLD, "itemsaver_menu", menuData);
-        }
-        return menuData;
+        return server.getWorld(DimensionType.OVERWORLD).getSavedData().getOrCreate(() -> new ItemMenuData("itemsaver_menu"), "itemsaver_menu");
     }
 
     public static ItemTypeData getTypeData(MinecraftServer server, String type) {
-        ItemTypeData typeData = server.getWorld(DimensionType.OVERWORLD).getSavedData(DimensionType.OVERWORLD, ItemTypeData::new, "itemsaver_type_" + type);
-        if (typeData == null) {
-            typeData = new ItemTypeData("itemsaver_type_" + type);
-            server.getWorld(DimensionType.OVERWORLD).setSavedData(DimensionType.OVERWORLD, "itemsaver_type_" + type, typeData);
-        }
-        return typeData;
+        return server.getWorld(DimensionType.OVERWORLD).getSavedData().getOrCreate(() -> new ItemTypeData("itemsaver_type_" + type), "itemsaver_type_" + type);
     }
 
     public static void runTask(Runnable task) {
@@ -115,7 +105,7 @@ public class CommonProxy {
         }
     }
 
-    public static void give(EntityPlayer target, ItemStack itemStack, int count) {
+    public static void give(PlayerEntity target, ItemStack itemStack, int count) {
         ItemStack stack = itemStack.copy();
         if (count > 0) {
             stack.setCount(count);
@@ -123,16 +113,16 @@ public class CommonProxy {
         boolean flag = target.inventory.addItemStackToInventory(stack);
         if (flag) {
             target.world.playSound(null, target.posX, target.posY, target.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((target.getRNG().nextFloat() - target.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-            target.inventoryContainer.detectAndSendChanges();
+            target.openContainer.detectAndSendChanges();
         }
         if (flag && stack.isEmpty()) {
             stack.setCount(1);
-            EntityItem entityitem1 = target.dropItem(stack, false);
+            ItemEntity entityitem1 = target.dropItem(stack, false);
             if (entityitem1 != null) {
                 entityitem1.makeFakeItem();
             }
         } else {
-            EntityItem entityitem = target.dropItem(stack, false);
+            ItemEntity entityitem = target.dropItem(stack, false);
             if (entityitem != null) {
                 entityitem.setNoPickupDelay();
                 entityitem.setOwnerId(target.getUniqueID());

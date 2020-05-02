@@ -17,7 +17,7 @@ ext {
 
 version = '1.2.0'
 group = 'org.soraworld'
-archivesBaseName = 'ItemSaver-1.13.2'
+archivesBaseName = 'ItemSaver-1.14.3'
 
 sourceCompatibility = targetCompatibility = 1.8
 
@@ -28,7 +28,7 @@ repositories {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20190530-1.13.2'
+    mappings channel: 'snapshot', version: '20200119-1.14.3'
     runs {
         client {
             workingDirectory project.file('run/client')
@@ -54,7 +54,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.13.2-25.0.219'
+    minecraft 'net.minecraftforge:forge:1.14.3-27.0.60'
 }
 
 processResources {

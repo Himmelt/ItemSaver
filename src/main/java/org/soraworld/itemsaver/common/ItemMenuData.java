@@ -1,10 +1,10 @@
 package org.soraworld.itemsaver.common;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.storage.WorldSavedData;
 
 import java.util.*;
@@ -21,17 +21,17 @@ public class ItemMenuData extends WorldSavedData {
     }
 
     @Override
-    public void read(NBTTagCompound nbt) {
-        NBTTagList list = nbt.getList("types", 8);
+    public void read(CompoundNBT nbt) {
+        ListNBT list = nbt.getList("types", 8);
         for (int i = 0; i < list.size(); i++) {
             types.add(list.getString(i));
         }
     }
 
     @Override
-    public NBTTagCompound write(NBTTagCompound compound) {
-        NBTTagList list = new NBTTagList();
-        types.forEach(type -> list.add(new NBTTagString(type)));
+    public CompoundNBT write(CompoundNBT compound) {
+        ListNBT list = new ListNBT();
+        types.forEach(type -> list.add(new StringNBT(type)));
         compound.put("types", list);
         return compound;
     }
@@ -56,10 +56,10 @@ public class ItemMenuData extends WorldSavedData {
         for (int i = 0; i < menu.getSizeInventory(); i++) {
             ItemStack stack = GlassPanes.getGlassPane(i);
             if (i < list.size()) {
-                stack.setDisplayName(new TextComponentString("\u00A7r" + list.get(i)));
+                stack.setDisplayName(new StringTextComponent("\u00A7r" + list.get(i)));
                 menu.putKey(i, list.get(i));
             } else {
-                stack.setDisplayName(new TextComponentString("\u00A7r[可添加]"));
+                stack.setDisplayName(new StringTextComponent("\u00A7r[可添加]"));
             }
             menu.setInventorySlotContents(i, stack);
         }

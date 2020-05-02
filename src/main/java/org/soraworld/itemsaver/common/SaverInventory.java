@@ -1,49 +1,40 @@
 package org.soraworld.itemsaver.common;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.InventoryBasic;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.IInteractionObject;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Himmelt
  */
-public class SaverInventory extends InventoryBasic implements IInteractionObject {
+public class SaverInventory extends Inventory implements INamedContainerProvider {
 
     private final String type;
     private final boolean isMenu;
+    private final ITextComponent title;
     private final Map<Integer, String> keys = new HashMap<>();
 
     public SaverInventory(String title, String type, int slotCount, boolean isMenu) {
-        super(new TextComponentString(title), slotCount);
+        super(slotCount);
         this.type = type;
         this.isMenu = isMenu;
-    }
-
-    @Override
-    public Container createContainer(InventoryPlayer playerInventory, EntityPlayer player) {
-        return new SaverContainer(playerInventory, this, player);
-    }
-
-    @Nonnull
-    @Override
-    public String getGuiID() {
-        return "minecraft:chest";
+        this.title = new StringTextComponent(title);
     }
 
     public void putKey(int slot, String type) {
         keys.put(slot, type);
     }
 
-    public void slotClick(int slotId, int mouse, ClickType clickType, EntityPlayerMP player) {
+    public void slotClick(int slotId, int mouse, ClickType clickType, ServerPlayerEntity player) {
         if (isMenu) {
             if (keys.containsKey(slotId)) {
                 player.closeScreen();
@@ -59,5 +50,16 @@ public class SaverInventory extends InventoryBasic implements IInteractionObject
                 }
             }
         }
+    }
+
+    @Override
+    public ITextComponent getDisplayName() {
+        return title;
+    }
+
+    @Override
+    public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity player) {
+        int rows = getSizeInventory() / 9;
+        return new SaverContainer(playerInventory, this, player, rows, windowId);
     }
 }

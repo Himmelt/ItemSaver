@@ -3,7 +3,7 @@ package org.soraworld.itemsaver.common;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 
-import static net.minecraft.init.Blocks.*;
+import static net.minecraft.block.Blocks.*;
 
 /**
  * @author Himmelt
