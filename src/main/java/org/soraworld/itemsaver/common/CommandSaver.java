@@ -4,6 +4,7 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
@@ -63,7 +64,9 @@ public class CommandSaver extends CommandBase {
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
                             ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
-                            if (CommonProxy.addItem(server, args[1], args[2], stack)) {
+                            if (stack.isEmpty() || stack.getItem() == Items.AIR) {
+                                sender.sendMessage(new TextComponentString("物品不能为空!"));
+                            } else if (CommonProxy.addItem(server, args[1], args[2], stack)) {
                                 sender.sendMessage(new TextComponentString("物品已添加!"));
                             } else {
                                 sender.sendMessage(new TextComponentString("相应名称物品已存在，请更换名称或使用 set 覆盖 !"));
@@ -79,8 +82,12 @@ public class CommandSaver extends CommandBase {
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
                             ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
-                            CommonProxy.setItem(server, args[1], args[2], stack);
-                            sender.sendMessage(new TextComponentString("物品已设置!"));
+                            if (stack.isEmpty() || stack.getItem() == Items.AIR) {
+                                sender.sendMessage(new TextComponentString("物品不能为空!"));
+                            } else {
+                                CommonProxy.setItem(server, args[1], args[2], stack);
+                                sender.sendMessage(new TextComponentString("物品已设置!"));
+                            }
                         } else {
                             sender.sendMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
                         }
