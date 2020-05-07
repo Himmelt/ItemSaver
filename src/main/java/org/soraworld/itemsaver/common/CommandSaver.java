@@ -63,7 +63,9 @@ public class CommandSaver extends CommandBase {
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
                             ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
-                            if (CommonProxy.addItem(server, args[1], args[2], stack)) {
+                            if (stack.stackSize <= 0 || stack.getItem() == null) {
+                                sender.addChatMessage(new TextComponentString("物品不能为空!"));
+                            } else if (CommonProxy.addItem(server, args[1], args[2], stack)) {
                                 sender.addChatMessage(new TextComponentString("物品已添加!"));
                             } else {
                                 sender.addChatMessage(new TextComponentString("相应名称物品已存在，请更换名称或使用 set 覆盖 !"));
@@ -79,8 +81,12 @@ public class CommandSaver extends CommandBase {
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
                             ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
-                            CommonProxy.setItem(server, args[1], args[2], stack);
-                            sender.addChatMessage(new TextComponentString("物品已设置!"));
+                            if (stack.stackSize <= 0 || stack.getItem() == null) {
+                                sender.addChatMessage(new TextComponentString("物品不能为空!"));
+                            } else {
+                                CommonProxy.setItem(server, args[1], args[2], stack);
+                                sender.addChatMessage(new TextComponentString("物品已设置!"));
+                            }
                         } else {
                             sender.addChatMessage(new TextComponentString("此命令只能有游戏内玩家执行 !"));
                         }
