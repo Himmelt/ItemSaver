@@ -63,7 +63,7 @@ public class CommandSaver extends CommandBase {
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
                             ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
-                            if (stack.stackSize <= 0 || stack.getItem() == null) {
+                            if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) {
                                 sender.addChatMessage(new TextComponentString("物品不能为空!"));
                             } else if (CommonProxy.addItem(server, args[1], args[2], stack)) {
                                 sender.addChatMessage(new TextComponentString("物品已添加!"));
@@ -81,7 +81,7 @@ public class CommandSaver extends CommandBase {
                     if (args.length == 3) {
                         if (sender instanceof EntityPlayerMP) {
                             ItemStack stack = ((EntityPlayerMP) sender).getHeldItem(EnumHand.MAIN_HAND);
-                            if (stack.stackSize <= 0 || stack.getItem() == null) {
+                            if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) {
                                 sender.addChatMessage(new TextComponentString("物品不能为空!"));
                             } else {
                                 CommonProxy.setItem(server, args[1], args[2], stack);
