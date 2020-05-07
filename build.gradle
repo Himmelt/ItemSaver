@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         maven { url 'https://maven.aliyun.com/repository/public/' }
-        maven { url 'https://files.minecraftforge.net/maven' }
+        maven { url 'https://files.minecraftforge.net/maven/' }
         maven { url 'https://crystal.app.lss233.com/repositories/minecraft' }
     }
     dependencies {
@@ -21,7 +21,7 @@ sourceCompatibility = targetCompatibility = 1.8
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public/' }
-    maven { url 'https://files.minecraftforge.net/maven' }
+    maven { url 'https://files.minecraftforge.net/maven/' }
     maven { url 'https://crystal.app.lss233.com/repositories/minecraft' }
 }
 
