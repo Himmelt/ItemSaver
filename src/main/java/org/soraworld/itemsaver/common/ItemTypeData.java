@@ -4,6 +4,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldSavedData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,8 +87,14 @@ public class ItemTypeData extends WorldSavedData {
             if (i == amount - 1) {
                 stack.setStackDisplayName("\u00A7r[返回]");
             } else if (i < list.size()) {
-                stack = stacks.getOrDefault(list.get(i), stack).copy();
-                saver.putKey(i, list.get(i));
+                String name = list.get(i);
+                stack = stacks.getOrDefault(name, stack).copy();
+                if (stack.hasDisplayName()) {
+                    stack.setStackDisplayName("\u00A7r[" + name + "]" + stack.getDisplayName());
+                } else {
+                    stack.setStackDisplayName("\u00A7r[" + name + "]" + StatCollector.translateToLocal(stack.getUnlocalizedName() + ".name"));
+                }
+                saver.putKey(i, name);
             } else {
                 stack.setStackDisplayName("\u00A7r[可添加]");
             }
